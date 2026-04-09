@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Card, CardContent } from "./components/ui/card";
+import "./App.css";
 
 function App() {
   const [task, setTask] = useState([]);
@@ -34,28 +36,55 @@ function App() {
   function moveTaskToFront(id) {}
 
   return (
-    <div>
-      <h1>Todo List</h1>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={newTask}
-          onChange={handleChange}
-          placeholder="Add a new task"
-        />
-        <button type="submit">Add Task</button>
-      </form>
-      <ul>
-        {task.map((t) => (
-          <li key={t.id}>
-            {t.text}
-            <button onClick={() => deleteTask(t.id)}>Delete</button>
-            <button onClick={() => editTask(t.id)}>Edit</button>
-            <button onClick={() => moveTaskToFront(t.id)}>Move to Front</button>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <main className="app">
+      <div className="todo-container">
+        <h1 className="todo-title">Todo List</h1>
+
+        <form onSubmit={handleSubmit} className="todo-form">
+          <input
+            type="text"
+            value={newTask}
+            onChange={handleChange}
+            placeholder="Add a new task"
+            className="todo-input"
+          />
+          <button type="submit" className="todo-add-button">
+            Add Task
+          </button>
+        </form>
+
+        <div className="task-list">
+          {task.map((t) => (
+            <Card key={t.id} className="task-card">
+              <CardContent className="task-card-content">
+                <span className="task-text">{t.text}</span>
+
+                <div className="task-actions">
+                  <button
+                    onClick={() => deleteTask(t.id)}
+                    className="task-button delete-button"
+                  >
+                    Delete
+                  </button>
+                  <button
+                    onClick={() => editTask(t.id)}
+                    className="task-button edit-button"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => moveTaskToFront(t.id)}
+                    className="task-button move-button"
+                  >
+                    Move to Front
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </main>
   );
 }
 
