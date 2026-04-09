@@ -31,9 +31,21 @@ function App() {
     setTask(task.filter((t) => t.id !== id));
   }
 
-  function editTask(id) {}
+  function editTask(id) {
+    const currentTask = task.find((t) => t.id === id);
+    const updatedText = prompt("Edit your task:", currentTask.text);
 
-  function moveTaskToFront(id) {}
+    if (updatedText === null || updatedText.trim() === "") return;
+
+    setTask(task.map((t) => (t.id === id ? { ...t, text: updatedText } : t)));
+  }
+
+  function moveTaskToFront(id) {
+    const taskToMove = task.find((t) => t.id === id);
+    if (taskToMove) {
+      setTask([taskToMove, ...task.filter((t) => t.id !== id)]);
+    }
+  }
 
   return (
     <main className="app">
