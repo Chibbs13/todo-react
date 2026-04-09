@@ -21,6 +21,7 @@ function App() {
     const newTaskObj = {
       id: Date.now(),
       text: newTask,
+      completed: false,
     };
 
     setTask([...task, newTaskObj]);
@@ -47,6 +48,12 @@ function App() {
     }
   }
 
+  function toggleTaskCompletion(id) {
+    setTask(
+      task.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)),
+    );
+  }
+
   return (
     <main className="app">
       <div className="todo-container">
@@ -69,7 +76,9 @@ function App() {
           {task.map((t) => (
             <Card key={t.id} className="task-card">
               <CardContent className="task-card-content">
-                <span className="task-text">{t.text}</span>
+                <span className={`task-text ${t.completed ? "completed" : ""}`}>
+                  {t.text}
+                </span>
 
                 <div className="task-actions">
                   <button
@@ -89,6 +98,12 @@ function App() {
                     className="task-button move-button"
                   >
                     Move to Front
+                  </button>
+                  <button
+                    onClick={() => toggleTaskCompletion(t.id)}
+                    className="task-button complete-button"
+                  >
+                    {t.completed ? "Mark Active" : "Mark Complete"}
                   </button>
                 </div>
               </CardContent>
