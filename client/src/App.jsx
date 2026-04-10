@@ -1,11 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "./components/ui/card";
 import { Button } from "./components/ui/button";
 import "./App.css";
 
 function App() {
-  const [task, setTask] = useState([]);
+  const [task, setTask] = useState(() => {
+    const savedTasks = localStorage.getItem("tasks");
+    return savedTasks ? JSON.parse(savedTasks) : [];
+  });
   const [newTask, setNewTask] = useState("");
+
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(task));
+  }, [task]);
 
   function handleChange(e) {
     setNewTask(e.target.value);
@@ -47,12 +54,6 @@ function App() {
     if (taskToMove) {
       setTask([taskToMove, ...task.filter((t) => t.id !== id)]);
     }
-  }
-
-  function toggleTaskCompletion(id) {
-    setTask(
-      task.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)),
-    );
   }
 
   return (
