@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent } from "./components/ui/card";
+import { Button } from "./components/ui/button";
 import "./App.css";
 
 function App() {
@@ -59,6 +60,10 @@ function App() {
       <div className="todo-container">
         <h1 className="todo-title">Todo List</h1>
 
+        <p className="todo-subtitle">
+          Stay on top of your tasks with a clean workflow!
+        </p>
+
         <form onSubmit={handleSubmit} className="todo-form">
           <input
             type="text"
@@ -73,42 +78,38 @@ function App() {
         </form>
 
         <div className="task-list">
-          {task.map((t) => (
-            <Card key={t.id} className="task-card">
-              <CardContent className="task-card-content">
-                <span className={`task-text ${t.completed ? "completed" : ""}`}>
-                  {t.text}
-                </span>
+          {task.length === 0 ? (
+            <p className="empty-state">No tasks yet. Add one above.</p>
+          ) : (
+            task.map((t) => (
+              <Card key={t.id} className="task-card">
+                <CardContent className="task-card-content">
+                  <span
+                    className={`task-text ${t.completed ? "completed" : ""}`}
+                  >
+                    {t.text}
+                  </span>
 
-                <div className="task-actions">
-                  <button
-                    onClick={() => deleteTask(t.id)}
-                    className="task-button delete-button"
-                  >
-                    Delete
-                  </button>
-                  <button
-                    onClick={() => editTask(t.id)}
-                    className="task-button edit-button"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => moveTaskToFront(t.id)}
-                    className="task-button move-button"
-                  >
-                    Move to Front
-                  </button>
-                  <button
-                    onClick={() => toggleTaskCompletion(t.id)}
-                    className="task-button complete-button"
-                  >
-                    {t.completed ? "Mark Active" : "Mark Complete"}
-                  </button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  <div className="task-actions">
+                    <Button onClick={() => moveTaskToFront(t.id)}>
+                      Move to Front
+                    </Button>
+
+                    <Button variant="secondary" onClick={() => editTask(t.id)}>
+                      Edit
+                    </Button>
+
+                    <Button
+                      variant="destructive"
+                      onClick={() => deleteTask(t.id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
       </div>
     </main>

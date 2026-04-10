@@ -1,7 +1,7 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background-color: #f4f4f5;
+  background: linear-gradient(to bottom, #f4f4f5, #e4e4e7);
 }
 
 .app {
@@ -10,28 +10,59 @@ body {
 }
 
 .todo-container {
-  max-width: 700px;
+  max-width: 760px;
   margin: 0 auto;
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  padding: 32px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.empty-state {
+  text-align: center;
+  color: #71717a;
+  background: white;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
 }
 
 .todo-title {
   text-align: center;
-  margin-bottom: 24px;
-  font-size: 2rem;
+  margin-bottom: 8px;
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #18181b;
+}
+
+.todo-subtitle {
+  text-align: center;
+  margin-bottom: 28px;
+  color: #71717a;
+  font-size: 1rem;
 }
 
 .todo-form {
   display: flex;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .todo-input {
   flex: 1;
-  padding: 12px;
+  padding: 14px 16px;
   font-size: 1rem;
   border: 1px solid #d4d4d8;
-  border-radius: 8px;
+  border-radius: 12px;
+  background: white;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.todo-input:focus {
+  outline: none;
+  border-color: #18181b;
+  box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.08);
 }
 
 .todo-add-button {
@@ -56,6 +87,14 @@ body {
 
 .task-card {
   width: 100%;
+  border-radius: 16px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+.task-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
 }
 
 .task-card-content {
@@ -63,52 +102,22 @@ body {
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  padding: 20px;
+  padding: 22px;
 }
-
 .task-text {
-  font-size: 1rem;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: #18181b;
 }
 
 .task-actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
-.task-button {
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
 
-.delete-button {
-  background-color: #dc2626;
-  color: white;
-}
-
-.delete-button:hover {
-  background-color: #b91c1c;
-}
-
-.edit-button {
-  background-color: #2563eb;
-  color: white;
-}
-
-.edit-button:hover {
-  background-color: #1d4ed8;
-}
-
-.move-button {
-  background-color: #16a34a;
-  color: white;
-}
-
-.move-button:hover {
-  background-color: #15803d;
-}
 
 .complete-button {
   background-color: #7c3aed;
