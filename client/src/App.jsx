@@ -9,6 +9,8 @@ function App() {
     return savedTasks ? JSON.parse(savedTasks) : [];
   });
   const [newTask, setNewTask] = useState("");
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [editText, setEditText] = useState("");
 
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(task));
@@ -38,15 +40,32 @@ function App() {
 
   function deleteTask(id) {
     setTask(task.filter((t) => t.id !== id));
+
+    if (selectedTask && selectedTask.id === id) {
+      closeTaskEditor();
+    }
   }
 
-  function editTask(id) {
-    const currentTask = task.find((t) => t.id === id);
-    const updatedText = prompt("Edit your task:", currentTask.text);
+  function openTaskEditor(taskItem) {
+    setSelectedTask(taskItem);
+    setEditText(taskItem.text);
+  }
 
-    if (updatedText === null || updatedText.trim() === "") return;
+  function closeTaskEditor() {
+    setSelectedTask(null);
+    setEditText("");
+  }
 
-    setTask(task.map((t) => (t.id === id ? { ...t, text: updatedText } : t)));
+  function saveTaskEdit() {
+    if (!editText.trim() || !selectedTask) return;
+
+    setTask(
+      task.map((t) =>
+        t.id === selectedTask.id ? { ...t, text: editText } : t,
+      ),
+    );
+
+    closeTaskEditor();
   }
 
   function moveTaskToFront(id) {
@@ -83,7 +102,11 @@ function App() {
             <p className="empty-state">No tasks yet. Add one above.</p>
           ) : (
             task.map((t) => (
-              <Card key={t.id} className="task-card">
+              <Card
+                key={t.id}
+                className="task-card"
+                onClick={() => openTaskEditor(t)}
+              >
                 <CardContent className="task-card-content">
                   <span
                     className={`task-text ${t.completed ? "completed" : ""}`}
@@ -91,12 +114,18 @@ function App() {
                     {t.text}
                   </span>
 
-                  <div className="task-actions">
+                  <div
+                    className="task-actions"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <Button onClick={() => moveTaskToFront(t.id)}>
                       Move to Front
                     </Button>
 
-                    <Button variant="secondary" onClick={() => editTask(t.id)}>
+                    <Button
+                      variant="secondary"
+                      onClick={() => openTaskEditor(t)}
+                    >
                       Edit
                     </Button>
 
@@ -113,6 +142,28 @@ function App() {
           )}
         </div>
       </div>
+
+      {selectedTask && (
+        <div className="task-overlay" onClick={closeTaskEditor}>
+          <div className="task-modal" onClick={(e) => e.stopPropagation()}>
+            <h2 className="modal-title">Edit Task</h2>
+
+            <textarea
+              className="modal-input"
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+              rows="5"
+            />
+
+            <div className="modal-actions">
+              <Button onClick={saveTaskEdit}>Save</Button>
+              <Button variant="secondary" onClick={closeTaskEditor}>
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

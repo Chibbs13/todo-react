@@ -1,7 +1,7 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: linear-gradient(to bottom, #f4f4f5, #e4e4e7);
+  background: linear-gradient(to bottom, #f4f4f5, hsla(240, 78%, 61%, 0.982));
 }
 
 .app {
@@ -117,18 +117,56 @@ body {
   align-items: center;
 }
 
-
-
-.complete-button {
-  background-color: #7c3aed;
-  color: white;
+.task-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
-.complete-button:hover {
-  background-color: #6d28d9;
+.task-modal {
+  background: white;
+  width: 90%;
+  max-width: 550px;
+  min-height: 260px;
+  padding: 24px;
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  animation: modalPop 0.25s ease;
 }
 
-.completed {
-  text-decoration: line-through;
-  opacity: 0.6;
+.modal-title {
+  margin-bottom: 16px;
 }
+
+.modal-input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  resize: vertical;
+  margin-bottom: 18px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+@keyframes modalPop {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+
+
