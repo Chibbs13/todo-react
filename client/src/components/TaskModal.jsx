@@ -8,6 +8,9 @@ function TaskModal({
   setTaskTitle,
   taskDetails,
   setTaskDetails,
+  taskCategory,
+  setTaskCategory,
+  categories,
   closeTaskModal,
   saveTask,
   saveLabel,
@@ -23,6 +26,7 @@ function TaskModal({
             <h2 className="modal-title">{modalTitle}</h2>
           </div>
 
+          {/* TITLE INPUT */}
           <input
             className="modal-title-input"
             type="text"
@@ -31,6 +35,23 @@ function TaskModal({
             placeholder="Task title"
           />
 
+          {/* ✅ CATEGORY BUTTONS */}
+          <div className="category-selector">
+            {categories.map((cat, index) => (
+              <button
+                key={index}
+                type="button"
+                className={`category-chip ${
+                  taskCategory === cat ? "active" : ""
+                }`}
+                onClick={() => setTaskCategory(cat)}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* DETAILS */}
           <textarea
             className="modal-input"
             value={taskDetails}

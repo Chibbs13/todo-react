@@ -25,6 +25,7 @@ function App() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDetails, setTaskDetails] = useState("");
+  const [taskCategory, setTaskCategory] = useState("All Tasks");
 
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategory, setNewCategory] = useState("");
@@ -38,6 +39,7 @@ function App() {
     setSelectedTask(null);
     setTaskTitle("");
     setTaskDetails("");
+    setTaskCategory("All Tasks");
   }
 
   function openTaskEditor(taskItem) {
@@ -45,6 +47,7 @@ function App() {
     setSelectedTask(taskItem);
     setTaskTitle(taskItem.title || taskItem.text || "");
     setTaskDetails(taskItem.details || "");
+    setTaskCategory(taskItem.category || "All Tasks");
   }
 
   function closeTaskModal() {
@@ -52,6 +55,7 @@ function App() {
     setSelectedTask(null);
     setTaskTitle("");
     setTaskDetails("");
+    setTaskCategory("All Tasks");
   }
 
   function saveTask() {
@@ -62,6 +66,7 @@ function App() {
         id: Date.now(),
         title: taskTitle,
         details: taskDetails,
+        category: taskCategory,
         completed: false,
       };
 
@@ -70,7 +75,12 @@ function App() {
       setTask(
         task.map((t) =>
           t.id === selectedTask.id
-            ? { ...t, title: taskTitle, details: taskDetails }
+            ? {
+                ...t,
+                title: taskTitle,
+                details: taskDetails,
+                category: taskCategory,
+              }
             : t,
         ),
       );
@@ -162,6 +172,9 @@ function App() {
         setTaskTitle={setTaskTitle}
         taskDetails={taskDetails}
         setTaskDetails={setTaskDetails}
+        taskCategory={taskCategory}
+        setTaskCategory={setTaskCategory}
+        categories={categories}
         closeTaskModal={closeTaskModal}
         saveTask={saveTask}
         saveLabel={isAddingTask ? "Add Task" : "Save"}

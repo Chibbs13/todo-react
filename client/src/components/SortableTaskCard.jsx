@@ -21,10 +21,14 @@ function SortableTaskCard({ t, deleteTask, openTaskEditor }) {
 
             <div className="task-text-group">
               <span className={`task-title ${t.completed ? "completed" : ""}`}>
-                {t.title || "Untitled Task"}
+                {t.title || t.text || "Untitled Task"}
               </span>
 
               {t.details && <span className="task-details">{t.details}</span>}
+
+              {t.category && (
+                <span className="task-category-badge">{t.category}</span>
+              )}
             </div>
           </div>
 
