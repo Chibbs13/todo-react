@@ -5,12 +5,20 @@ import { arrayMove } from "@dnd-kit/sortable";
 
 import TaskList from "./components/TaskList";
 import TaskModal from "./components/TaskModal";
+import CategorySidebar from "./components/CategorySidebar";
 
 function App() {
   const [task, setTask] = useState(() => {
     const savedTasks = localStorage.getItem("tasks");
     return savedTasks ? JSON.parse(savedTasks) : [];
   });
+
+  const [categories, setCategories] = useState([
+    "All Tasks",
+    "Work",
+    "Home",
+    "Gym",
+  ]);
 
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
@@ -86,33 +94,52 @@ function App() {
     setTask((items) => arrayMove(items, oldIndex, newIndex));
   }
 
+  function handleAddCategory() {
+    const newCategory = prompt("Enter a new category name:");
+    if (!newCategory || !newCategory.trim()) return;
+
+    const trimmed = newCategory.trim();
+
+    if (categories.includes(trimmed)) return;
+    if (categories.length >= 8) return;
+
+    setCategories([...categories, trimmed]);
+  }
+
   return (
     <main className="app">
-      <div className="todo-container">
-        <h1 className="todo-title">Todo List</h1>
+      <div className="dashboard-layout">
+        <CategorySidebar
+          categories={categories}
+          onAddCategory={handleAddCategory}
+        />
 
-        <p className="todo-subtitle">
-          Stay on top of your tasks with a clean workflow!
-        </p>
+        <div className="todo-container">
+          <h1 className="todo-title">Todo List</h1>
 
-        <button className="todo-add-button" onClick={openAddTaskModal}>
-          Add Task
-        </button>
+          <p className="todo-subtitle">
+            Stay on top of your tasks with a clean workflow!
+          </p>
 
-        <p className="drag-help-text">
-          Hold and drag a task card to reorder it.
-        </p>
+          <button className="todo-add-button" onClick={openAddTaskModal}>
+            Add Task
+          </button>
 
-        <DndContext
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <TaskList
-            tasks={task}
-            deleteTask={deleteTask}
-            openTaskEditor={openTaskEditor}
-          />
-        </DndContext>
+          <p className="drag-help-text">
+            Hold and drag a task card to reorder it.
+          </p>
+
+          <DndContext
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <TaskList
+              tasks={task}
+              deleteTask={deleteTask}
+              openTaskEditor={openTaskEditor}
+            />
+          </DndContext>
+        </div>
       </div>
 
       <TaskModal
