@@ -6,6 +6,7 @@ import { arrayMove } from "@dnd-kit/sortable";
 import TaskList from "./components/TaskList";
 import TaskModal from "./components/TaskModal";
 import CategorySidebar from "./components/CategorySidebar";
+import CategoryModal from "./components/CategoryModal";
 
 function App() {
   const [task, setTask] = useState(() => {
@@ -24,6 +25,9 @@ function App() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDetails, setTaskDetails] = useState("");
+
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
 
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(task));
@@ -94,16 +98,25 @@ function App() {
     setTask((items) => arrayMove(items, oldIndex, newIndex));
   }
 
-  function handleAddCategory() {
-    const newCategory = prompt("Enter a new category name:");
-    if (!newCategory || !newCategory.trim()) return;
+  function openAddCategoryModal() {
+    setIsAddingCategory(true);
+    setNewCategory("");
+  }
 
+  function closeCategoryModal() {
+    setIsAddingCategory(false);
+    setNewCategory("");
+  }
+
+  function saveCategory() {
     const trimmed = newCategory.trim();
 
+    if (!trimmed) return;
     if (categories.includes(trimmed)) return;
     if (categories.length >= 8) return;
 
     setCategories([...categories, trimmed]);
+    closeCategoryModal();
   }
 
   return (
@@ -111,7 +124,7 @@ function App() {
       <div className="dashboard-layout">
         <CategorySidebar
           categories={categories}
-          onAddCategory={handleAddCategory}
+          onAddCategory={openAddCategoryModal}
         />
 
         <div className="todo-container">
@@ -152,6 +165,14 @@ function App() {
         closeTaskModal={closeTaskModal}
         saveTask={saveTask}
         saveLabel={isAddingTask ? "Add Task" : "Save"}
+      />
+
+      <CategoryModal
+        isOpen={isAddingCategory}
+        newCategory={newCategory}
+        setNewCategory={setNewCategory}
+        closeCategoryModal={closeCategoryModal}
+        saveCategory={saveCategory}
       />
     </main>
   );
