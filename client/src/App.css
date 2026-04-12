@@ -168,5 +168,126 @@ body {
   }
 }
 
+.drag-handle {
+  cursor: grab;
+}
 
+.drag-handle:active {
+  cursor: grabbing;
+}
 
+.drag-help-text {
+  margin-bottom: 14px;
+  font-size: 0.95rem;
+  opacity: 0.75;
+}
+
+.task-card {
+  margin-bottom: 12px;
+  cursor: grab;
+  user-select: none;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.task-card:hover {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.task-card:active {
+  cursor: grabbing;
+}
+
+.task-card-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.task-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.drag-indicator {
+  font-size: 1.1rem;
+  opacity: 0.55;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.task-text {
+  word-break: break-word;
+}
+
+.task-actions {
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+}
+
+.task-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.task-modal {
+  width: 100%;
+  max-width: 560px;
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  animation: modalPop 0.25s ease;
+}
+
+.task-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 24px;
+}
+
+.task-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.modal-input {
+  width: 100%;
+  min-height: 140px;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+@keyframes modalPop {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
