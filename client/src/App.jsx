@@ -3,9 +3,8 @@ import "./App.css";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 
-import TaskForm from "./components/TaskForm";
 import TaskList from "./components/TaskList";
-import TaskEditModal from "./components/TaskEditModal";
+import TaskModal from "./components/TaskModal";
 
 function App() {
   const [task, setTask] = useState(() => {
@@ -13,64 +12,60 @@ function App() {
     return savedTasks ? JSON.parse(savedTasks) : [];
   });
 
-  const [newTask, setNewTask] = useState("");
+  const [isAddingTask, setIsAddingTask] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
-  const [editText, setEditText] = useState("");
+  const [taskText, setTaskText] = useState("");
 
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(task));
   }, [task]);
 
-  function handleChange(e) {
-    setNewTask(e.target.value);
+  function openAddTaskModal() {
+    setIsAddingTask(true);
+    setSelectedTask(null);
+    setTaskText("");
   }
 
-  function handleSubmit(e) {
-    e.preventDefault();
-    addTask();
+  function openTaskEditor(taskItem) {
+    setIsAddingTask(false);
+    setSelectedTask(taskItem);
+    setTaskText(taskItem.text);
   }
 
-  function addTask() {
-    if (newTask.trim() === "") return;
+  function closeTaskModal() {
+    setIsAddingTask(false);
+    setSelectedTask(null);
+    setTaskText("");
+  }
 
-    const newTaskObj = {
-      id: Date.now(),
-      text: newTask,
-      completed: false,
-    };
+  function saveTask() {
+    if (!taskText.trim()) return;
 
-    setTask([...task, newTaskObj]);
-    setNewTask("");
+    if (isAddingTask) {
+      const newTaskObj = {
+        id: Date.now(),
+        text: taskText,
+        completed: false,
+      };
+
+      setTask([...task, newTaskObj]);
+    } else if (selectedTask) {
+      setTask(
+        task.map((t) =>
+          t.id === selectedTask.id ? { ...t, text: taskText } : t,
+        ),
+      );
+    }
+
+    closeTaskModal();
   }
 
   function deleteTask(id) {
     setTask(task.filter((t) => t.id !== id));
 
     if (selectedTask && selectedTask.id === id) {
-      closeTaskEditor();
+      closeTaskModal();
     }
-  }
-
-  function openTaskEditor(taskItem) {
-    setSelectedTask(taskItem);
-    setEditText(taskItem.text);
-  }
-
-  function closeTaskEditor() {
-    setSelectedTask(null);
-    setEditText("");
-  }
-
-  function saveTaskEdit() {
-    if (!editText.trim() || !selectedTask) return;
-
-    setTask(
-      task.map((t) =>
-        t.id === selectedTask.id ? { ...t, text: editText } : t,
-      ),
-    );
-
-    closeTaskEditor();
   }
 
   function handleDragEnd(event) {
@@ -93,15 +88,13 @@ function App() {
           Stay on top of your tasks with a clean workflow!
         </p>
 
+        <button className="todo-add-button" onClick={openAddTaskModal}>
+          Add Task
+        </button>
+
         <p className="drag-help-text">
           Hold and drag a task card to reorder it.
         </p>
-
-        <TaskForm
-          newTask={newTask}
-          handleChange={handleChange}
-          handleSubmit={handleSubmit}
-        />
 
         <DndContext
           collisionDetection={closestCenter}
@@ -115,12 +108,14 @@ function App() {
         </DndContext>
       </div>
 
-      <TaskEditModal
-        selectedTask={selectedTask}
-        editText={editText}
-        setEditText={setEditText}
-        closeTaskEditor={closeTaskEditor}
-        saveTaskEdit={saveTaskEdit}
+      <TaskModal
+        isOpen={isAddingTask || !!selectedTask}
+        modalTitle={isAddingTask ? "Add New Task" : "Edit Task"}
+        taskText={taskText}
+        setTaskText={setTaskText}
+        closeTaskModal={closeTaskModal}
+        saveTask={saveTask}
+        saveLabel={isAddingTask ? "Add Task" : "Save"}
       />
     </main>
   );
