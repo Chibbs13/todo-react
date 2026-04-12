@@ -19,9 +19,13 @@ function SortableTaskCard({ t, deleteTask, openTaskEditor }) {
           <div className="task-left">
             <span className="drag-indicator">⋮⋮</span>
 
-            <span className={`task-text ${t.completed ? "completed" : ""}`}>
-              {t.text}
-            </span>
+            <div className="task-text-group">
+              <span className={`task-title ${t.completed ? "completed" : ""}`}>
+                {t.title || "Untitled Task"}
+              </span>
+
+              {t.details && <span className="task-details">{t.details}</span>}
+            </div>
           </div>
 
           <div

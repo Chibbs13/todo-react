@@ -14,7 +14,8 @@ function App() {
 
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
-  const [taskText, setTaskText] = useState("");
+  const [taskTitle, setTaskTitle] = useState("");
+  const [taskDetails, setTaskDetails] = useState("");
 
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(task));
@@ -23,28 +24,32 @@ function App() {
   function openAddTaskModal() {
     setIsAddingTask(true);
     setSelectedTask(null);
-    setTaskText("");
+    setTaskTitle("");
+    setTaskDetails("");
   }
 
   function openTaskEditor(taskItem) {
     setIsAddingTask(false);
     setSelectedTask(taskItem);
-    setTaskText(taskItem.text);
+    setTaskTitle(taskItem.title || taskItem.text || "");
+    setTaskDetails(taskItem.details || "");
   }
 
   function closeTaskModal() {
     setIsAddingTask(false);
     setSelectedTask(null);
-    setTaskText("");
+    setTaskTitle("");
+    setTaskDetails("");
   }
 
   function saveTask() {
-    if (!taskText.trim()) return;
+    if (!taskTitle.trim()) return;
 
     if (isAddingTask) {
       const newTaskObj = {
         id: Date.now(),
-        text: taskText,
+        title: taskTitle,
+        details: taskDetails,
         completed: false,
       };
 
@@ -52,7 +57,9 @@ function App() {
     } else if (selectedTask) {
       setTask(
         task.map((t) =>
-          t.id === selectedTask.id ? { ...t, text: taskText } : t,
+          t.id === selectedTask.id
+            ? { ...t, title: taskTitle, details: taskDetails }
+            : t,
         ),
       );
     }
@@ -111,8 +118,10 @@ function App() {
       <TaskModal
         isOpen={isAddingTask || !!selectedTask}
         modalTitle={isAddingTask ? "Add New Task" : "Edit Task"}
-        taskText={taskText}
-        setTaskText={setTaskText}
+        taskTitle={taskTitle}
+        setTaskTitle={setTaskTitle}
+        taskDetails={taskDetails}
+        setTaskDetails={setTaskDetails}
         closeTaskModal={closeTaskModal}
         saveTask={saveTask}
         saveLabel={isAddingTask ? "Add Task" : "Save"}

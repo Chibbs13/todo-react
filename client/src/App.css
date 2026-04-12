@@ -1,6 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: 'Nunito', sans-serif;
   background: linear-gradient(to bottom, #f4f4f5, hsla(240, 78%, 61%, 0.982));
 }
 
@@ -294,4 +296,32 @@ body {
 .todo-add-button {
   display: block;
   margin: 1rem auto 1.5rem;
+}
+
+.modal-title-input {
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #d4d4d8;
+  border-radius: 14px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.task-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.task-title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #111;
+}
+
+.task-details {
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.4;
 }

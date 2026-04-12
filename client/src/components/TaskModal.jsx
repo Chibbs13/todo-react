@@ -4,8 +4,10 @@ import { Button } from "./ui/button";
 function TaskModal({
   isOpen,
   modalTitle,
-  taskText,
-  setTaskText,
+  taskTitle,
+  setTaskTitle,
+  taskDetails,
+  setTaskDetails,
   closeTaskModal,
   saveTask,
   saveLabel,
@@ -21,12 +23,20 @@ function TaskModal({
             <h2 className="modal-title">{modalTitle}</h2>
           </div>
 
+          <input
+            className="modal-title-input"
+            type="text"
+            value={taskTitle}
+            onChange={(e) => setTaskTitle(e.target.value)}
+            placeholder="Task title"
+          />
+
           <textarea
             className="modal-input"
-            value={taskText}
-            onChange={(e) => setTaskText(e.target.value)}
+            value={taskDetails}
+            onChange={(e) => setTaskDetails(e.target.value)}
             rows="5"
-            placeholder="Enter your task here..."
+            placeholder="Enter task details..."
           />
 
           <div className="modal-actions">
