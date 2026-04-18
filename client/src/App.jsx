@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import "./App.css";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
@@ -10,10 +10,6 @@ import CategoryModal from "./components/CategoryModal";
 import { getCategoryStyle } from "./lib/categoryColors";
 
 const DEFAULT_CATEGORIES = ["All Tasks", "Work", "Home", "Gym"];
-
-function formatTaskCount(count, singular, plural = `${singular}s`) {
-  return `${count} ${count === 1 ? singular : plural}`;
-}
 
 function App() {
   const [task, setTask] = useState(() => {
@@ -50,6 +46,8 @@ function App() {
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDetails, setTaskDetails] = useState("");
   const [taskCategory, setTaskCategory] = useState("All Tasks");
+  const [isCelebrating, setIsCelebrating] = useState(false);
+  const celebrationTimeoutRef = useRef(null);
 
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategory, setNewCategory] = useState("");
@@ -69,7 +67,10 @@ function App() {
   const completedTaskCount = visibleTasks.filter(
     (taskItem) => taskItem.completed,
   ).length;
-  const remainingTaskCount = visibleTasks.length - completedTaskCount;
+  const progressPercent =
+    visibleTasks.length === 0
+      ? 0
+      : Math.round((completedTaskCount / visibleTasks.length) * 100);
   const todayLabel = new Intl.DateTimeFormat("en", {
     weekday: "long",
     month: "short",
@@ -77,6 +78,19 @@ function App() {
   }).format(new Date());
   const defaultTaskCategory =
     selectedCategory === "All Tasks" ? categories[1] || "All Tasks" : selectedCategory;
+
+  useEffect(() => {
+    return () => window.clearTimeout(celebrationTimeoutRef.current);
+  }, []);
+
+  function startCelebration() {
+    window.clearTimeout(celebrationTimeoutRef.current);
+    setIsCelebrating(true);
+
+    celebrationTimeoutRef.current = window.setTimeout(() => {
+      setIsCelebrating(false);
+    }, 2200);
+  }
 
   function openAddTaskModal() {
     setIsAddingTask(true);
@@ -142,13 +156,27 @@ function App() {
   }
 
   function toggleTaskCompleted(id) {
-    setTask(
-      task.map((taskItem) =>
-        taskItem.id === id
-          ? { ...taskItem, completed: !taskItem.completed }
-          : taskItem,
-      ),
+    const nextTasks = task.map((taskItem) =>
+      taskItem.id === id
+        ? { ...taskItem, completed: !taskItem.completed }
+        : taskItem,
     );
+    const nextVisibleTasks =
+      selectedCategory === "All Tasks"
+        ? nextTasks
+        : nextTasks.filter((taskItem) => taskItem.category === selectedCategory);
+    const wasComplete =
+      visibleTasks.length > 0 &&
+      visibleTasks.every((taskItem) => taskItem.completed);
+    const nextIsComplete =
+      nextVisibleTasks.length > 0 &&
+      nextVisibleTasks.every((taskItem) => taskItem.completed);
+
+    setTask(nextTasks);
+
+    if (!wasComplete && nextIsComplete) {
+      startCelebration();
+    }
   }
 
   function handleDragEnd(event) {
@@ -195,23 +223,70 @@ function App() {
         />
 
         <div className="todo-container">
-          <div className="todo-header">
-            <div className="todo-heading">
-              <p className="todo-date">{todayLabel}</p>
-              <h1 className="todo-title">
-                Today's <span className="title-gradient">Focus</span>
-              </h1>
+          <div className="todo-top-row">
+            <div className="todo-header">
+              <div className="todo-heading">
+                <p className="todo-date">{todayLabel}</p>
+                <h1 className="todo-title">
+                  Today's <span className="title-gradient">Focus</span>
+                </h1>
 
-              <p className="todo-subtitle">
-                A clean list for the few things that actually need your
-                attention.
-              </p>
+                <p className="todo-subtitle">
+                  A clean list for the few things that actually need your
+                  attention.
+                </p>
+              </div>
             </div>
 
-            <div className="task-stats" aria-label="Task summary">
-              <span>{formatTaskCount(visibleTasks.length, "task")}</span>
-              <span>{formatTaskCount(completedTaskCount, "done", "done")}</span>
-              <span>{formatTaskCount(remainingTaskCount, "left", "left")}</span>
+            <div
+              className={`progress-card ${isCelebrating ? "celebrating" : ""}`}
+              aria-label="Completion progress"
+            >
+              {isCelebrating && (
+                <>
+                  <div className="great-job-pop" role="status">
+                    Great Job!
+                  </div>
+
+                  <div className="confetti-burst" aria-hidden="true">
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                </>
+              )}
+
+              <div>
+                <p className="progress-label">Progress</p>
+                <p className="progress-value">{progressPercent}%</p>
+              </div>
+
+              <div
+                className="progress-track"
+                role="progressbar"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow={progressPercent}
+              >
+                <span style={{ width: `${progressPercent}%` }} />
+              </div>
+
+              <p className="progress-copy">
+                {visibleTasks.length === 0
+                  ? "No tasks yet"
+                  : completedTaskCount === 0
+                    ? "Let's check off some boxes"
+                  : `${completedTaskCount} of ${visibleTasks.length} complete`}
+              </p>
             </div>
           </div>
 

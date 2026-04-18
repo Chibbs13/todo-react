@@ -13,8 +13,8 @@ function TaskList({
 }) {
   const emptyMessage =
     selectedCategory === "All Tasks"
-      ? "Nothing here yet. Add a task and give your brain some breathing room."
-      : `No ${selectedCategory} tasks. A rare and beautiful sight.`;
+      ? "Let's check off some boxes. Add your first task to get rolling."
+      : `No ${selectedCategory} tasks yet. This list is ready when you are.`;
 
   return (
     <SortableContext
