@@ -4,7 +4,18 @@ import {
 } from "@dnd-kit/sortable";
 import SortableTaskCard from "./SortableTaskCard";
 
-function TaskList({ tasks, deleteTask, openTaskEditor }) {
+function TaskList({
+  tasks,
+  selectedCategory,
+  deleteTask,
+  openTaskEditor,
+  toggleTaskCompleted,
+}) {
+  const emptyMessage =
+    selectedCategory === "All Tasks"
+      ? "Nothing here yet. Add a task and give your brain some breathing room."
+      : `No ${selectedCategory} tasks. A rare and beautiful sight.`;
+
   return (
     <SortableContext
       items={tasks.map((t) => t.id)}
@@ -12,7 +23,7 @@ function TaskList({ tasks, deleteTask, openTaskEditor }) {
     >
       <div className="task-list">
         {tasks.length === 0 ? (
-          <p className="empty-state">No tasks yet. Add one above.</p>
+          <p className="empty-state">{emptyMessage}</p>
         ) : (
           tasks.map((t) => (
             <SortableTaskCard
@@ -20,6 +31,7 @@ function TaskList({ tasks, deleteTask, openTaskEditor }) {
               t={t}
               deleteTask={deleteTask}
               openTaskEditor={openTaskEditor}
+              toggleTaskCompleted={toggleTaskCompleted}
             />
           ))
         )}

@@ -1,11 +1,26 @@
-function CategorySidebar({ categories, onAddCategory }) {
+import { getCategoryStyle } from "../lib/categoryColors";
+
+function CategorySidebar({
+  categories,
+  selectedCategory,
+  onSelectCategory,
+  onAddCategory,
+}) {
   return (
     <aside className="category-sidebar">
       <h2 className="category-title">Categories</h2>
 
       <div className="category-list">
-        {categories.map((category, index) => (
-          <button key={index} className="category-item" type="button">
+        {categories.map((category) => (
+          <button
+            key={category}
+            className={`category-item ${
+              selectedCategory === category ? "active" : ""
+            }`}
+            style={getCategoryStyle(category)}
+            type="button"
+            onClick={() => onSelectCategory(category)}
+          >
             {category}
           </button>
         ))}

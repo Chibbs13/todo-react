@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import "./App.css";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
@@ -7,19 +7,43 @@ import TaskList from "./components/TaskList";
 import TaskModal from "./components/TaskModal";
 import CategorySidebar from "./components/CategorySidebar";
 import CategoryModal from "./components/CategoryModal";
+import { getCategoryStyle } from "./lib/categoryColors";
+
+const DEFAULT_CATEGORIES = ["All Tasks", "Work", "Home", "Gym"];
+
+function formatTaskCount(count, singular, plural = `${singular}s`) {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
 
 function App() {
   const [task, setTask] = useState(() => {
     const savedTasks = localStorage.getItem("tasks");
-    return savedTasks ? JSON.parse(savedTasks) : [];
+
+    if (!savedTasks) return [];
+
+    try {
+      return JSON.parse(savedTasks);
+    } catch {
+      return [];
+    }
   });
 
-  const [categories, setCategories] = useState([
-    "All Tasks",
-    "Work",
-    "Home",
-    "Gym",
-  ]);
+  const [categories, setCategories] = useState(() => {
+    const savedCategories = localStorage.getItem("categories");
+
+    if (!savedCategories) return DEFAULT_CATEGORIES;
+
+    try {
+      const parsedCategories = JSON.parse(savedCategories);
+
+      if (!Array.isArray(parsedCategories)) return DEFAULT_CATEGORIES;
+
+      return Array.from(new Set(["All Tasks", ...parsedCategories]));
+    } catch {
+      return DEFAULT_CATEGORIES;
+    }
+  });
+  const [selectedCategory, setSelectedCategory] = useState("All Tasks");
 
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
@@ -34,12 +58,32 @@ function App() {
     localStorage.setItem("tasks", JSON.stringify(task));
   }, [task]);
 
+  useEffect(() => {
+    localStorage.setItem("categories", JSON.stringify(categories));
+  }, [categories]);
+
+  const visibleTasks =
+    selectedCategory === "All Tasks"
+      ? task
+      : task.filter((taskItem) => taskItem.category === selectedCategory);
+  const completedTaskCount = visibleTasks.filter(
+    (taskItem) => taskItem.completed,
+  ).length;
+  const remainingTaskCount = visibleTasks.length - completedTaskCount;
+  const todayLabel = new Intl.DateTimeFormat("en", {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+  }).format(new Date());
+  const defaultTaskCategory =
+    selectedCategory === "All Tasks" ? categories[1] || "All Tasks" : selectedCategory;
+
   function openAddTaskModal() {
     setIsAddingTask(true);
     setSelectedTask(null);
     setTaskTitle("");
     setTaskDetails("");
-    setTaskCategory("All Tasks");
+    setTaskCategory(defaultTaskCategory);
   }
 
   function openTaskEditor(taskItem) {
@@ -50,13 +94,13 @@ function App() {
     setTaskCategory(taskItem.category || "All Tasks");
   }
 
-  function closeTaskModal() {
+  const closeTaskModal = useCallback(function closeTaskModal() {
     setIsAddingTask(false);
     setSelectedTask(null);
     setTaskTitle("");
     setTaskDetails("");
     setTaskCategory("All Tasks");
-  }
+  }, []);
 
   function saveTask() {
     if (!taskTitle.trim()) return;
@@ -97,6 +141,16 @@ function App() {
     }
   }
 
+  function toggleTaskCompleted(id) {
+    setTask(
+      task.map((taskItem) =>
+        taskItem.id === id
+          ? { ...taskItem, completed: !taskItem.completed }
+          : taskItem,
+      ),
+    );
+  }
+
   function handleDragEnd(event) {
     const { active, over } = event;
 
@@ -113,10 +167,10 @@ function App() {
     setNewCategory("");
   }
 
-  function closeCategoryModal() {
+  const closeCategoryModal = useCallback(function closeCategoryModal() {
     setIsAddingCategory(false);
     setNewCategory("");
-  }
+  }, []);
 
   function saveCategory() {
     const trimmed = newCategory.trim();
@@ -126,6 +180,7 @@ function App() {
     if (categories.length >= 8) return;
 
     setCategories([...categories, trimmed]);
+    setSelectedCategory(trimmed);
     closeCategoryModal();
   }
 
@@ -134,32 +189,46 @@ function App() {
       <div className="dashboard-layout">
         <CategorySidebar
           categories={categories}
+          selectedCategory={selectedCategory}
+          onSelectCategory={setSelectedCategory}
           onAddCategory={openAddCategoryModal}
         />
 
         <div className="todo-container">
-          <h1 className="todo-title">Todo List</h1>
+          <div className="todo-header">
+            <div className="todo-heading">
+              <p className="todo-date">{todayLabel}</p>
+              <h1 className="todo-title">
+                Today's <span className="title-gradient">Focus</span>
+              </h1>
 
-          <p className="todo-subtitle">
-            Stay on top of your tasks with a clean workflow!
-          </p>
+              <p className="todo-subtitle">
+                A clean list for the few things that actually need your
+                attention.
+              </p>
+            </div>
+
+            <div className="task-stats" aria-label="Task summary">
+              <span>{formatTaskCount(visibleTasks.length, "task")}</span>
+              <span>{formatTaskCount(completedTaskCount, "done", "done")}</span>
+              <span>{formatTaskCount(remainingTaskCount, "left", "left")}</span>
+            </div>
+          </div>
 
           <button className="todo-add-button" onClick={openAddTaskModal}>
             Add Task
           </button>
-
-          <p className="drag-help-text">
-            Hold and drag a task card to reorder it.
-          </p>
 
           <DndContext
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}
           >
             <TaskList
-              tasks={task}
+              tasks={visibleTasks}
+              selectedCategory={selectedCategory}
               deleteTask={deleteTask}
               openTaskEditor={openTaskEditor}
+              toggleTaskCompleted={toggleTaskCompleted}
             />
           </DndContext>
         </div>
@@ -175,6 +244,7 @@ function App() {
         taskCategory={taskCategory}
         setTaskCategory={setTaskCategory}
         categories={categories}
+        getCategoryStyle={getCategoryStyle}
         closeTaskModal={closeTaskModal}
         saveTask={saveTask}
         saveLabel={isAddingTask ? "Add Task" : "Save"}
