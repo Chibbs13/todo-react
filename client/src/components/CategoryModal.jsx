@@ -5,12 +5,14 @@ import { CATEGORY_ICON_OPTIONS } from "../lib/categoryIcons";
 
 function CategoryModal({
   isOpen,
+  modalTitle,
   newCategory,
   setNewCategory,
   newCategoryIcon,
   setNewCategoryIcon,
   closeCategoryModal,
   saveCategory,
+  saveLabel,
 }) {
   const inputRef = useRef(null);
   const selectedIconLabel =
@@ -54,7 +56,7 @@ function CategoryModal({
           >
             <div className="task-modal-header">
               <h2 className="modal-title" id="category-modal-title">
-                Add New Category
+                {modalTitle}
               </h2>
             </div>
 
@@ -99,7 +101,7 @@ function CategoryModal({
 
             <div className="modal-actions">
               <Button className="modal-primary-button" type="submit">
-                Add Category
+                {saveLabel}
               </Button>
               <Button
                 className="modal-secondary-button"

@@ -83,6 +83,7 @@ function App() {
   const cleanupPromptTimeoutRef = useRef(null);
 
   const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
   const [newCategory, setNewCategory] = useState("");
   const [newCategoryIcon, setNewCategoryIcon] = useState("tag");
 
@@ -265,12 +266,23 @@ function App() {
 
   function openAddCategoryModal() {
     setIsAddingCategory(true);
+    setEditingCategory(null);
     setNewCategory("");
     setNewCategoryIcon("tag");
   }
 
+  function openEditCategoryModal(category) {
+    if (category === GENERAL_CATEGORY) return;
+
+    setIsAddingCategory(true);
+    setEditingCategory(category);
+    setNewCategory(category);
+    setNewCategoryIcon(categoryIcons[category] || "tag");
+  }
+
   const closeCategoryModal = useCallback(function closeCategoryModal() {
     setIsAddingCategory(false);
+    setEditingCategory(null);
     setNewCategory("");
     setNewCategoryIcon("tag");
   }, []);
@@ -279,13 +291,73 @@ function App() {
     const trimmed = newCategory.trim();
 
     if (!trimmed) return;
-    if (categories.includes(trimmed)) return;
+    if (trimmed === GENERAL_CATEGORY && editingCategory !== GENERAL_CATEGORY) {
+      return;
+    }
+    if (categories.includes(trimmed) && trimmed !== editingCategory) return;
+
+    if (editingCategory) {
+      setCategories(
+        categories.map((category) =>
+          category === editingCategory ? trimmed : category,
+        ),
+      );
+      setTask(
+        task.map((taskItem) =>
+          taskItem.category === editingCategory
+            ? { ...taskItem, category: trimmed }
+            : taskItem,
+        ),
+      );
+      setCategoryIcons((currentIcons) => {
+        const { [editingCategory]: _oldIcon, ...remainingIcons } =
+          currentIcons;
+
+        return { ...remainingIcons, [trimmed]: newCategoryIcon };
+      });
+
+      if (selectedCategory === editingCategory) {
+        setSelectedCategory(trimmed);
+      }
+      if (taskCategory === editingCategory) {
+        setTaskCategory(trimmed);
+      }
+
+      closeCategoryModal();
+      return;
+    }
+
     if (categories.length >= 8) return;
 
     setCategories([...categories, trimmed]);
     setCategoryIcons({ ...categoryIcons, [trimmed]: newCategoryIcon });
     setSelectedCategory(trimmed);
     closeCategoryModal();
+  }
+
+  function deleteCategory(category) {
+    if (category === GENERAL_CATEGORY) return;
+
+    setCategories(categories.filter((item) => item !== category));
+    setCategoryIcons((currentIcons) => {
+      const { [category]: _deletedIcon, ...remainingIcons } = currentIcons;
+
+      return remainingIcons;
+    });
+    setTask(
+      task.map((taskItem) =>
+        taskItem.category === category
+          ? { ...taskItem, category: GENERAL_CATEGORY }
+          : taskItem,
+      ),
+    );
+
+    if (selectedCategory === category) {
+      setSelectedCategory(GENERAL_CATEGORY);
+    }
+    if (taskCategory === category) {
+      setTaskCategory(GENERAL_CATEGORY);
+    }
   }
 
   return (
@@ -297,6 +369,8 @@ function App() {
           selectedCategory={selectedCategory}
           onSelectCategory={setSelectedCategory}
           onAddCategory={openAddCategoryModal}
+          onEditCategory={openEditCategoryModal}
+          onDeleteCategory={deleteCategory}
         />
 
         <div className="todo-container">
@@ -417,12 +491,14 @@ function App() {
 
       <CategoryModal
         isOpen={isAddingCategory}
+        modalTitle={editingCategory ? "Edit Category" : "Add New Category"}
         newCategory={newCategory}
         setNewCategory={setNewCategory}
         newCategoryIcon={newCategoryIcon}
         setNewCategoryIcon={setNewCategoryIcon}
         closeCategoryModal={closeCategoryModal}
         saveCategory={saveCategory}
+        saveLabel={editingCategory ? "Save Category" : "Add Category"}
       />
     </main>
   );
