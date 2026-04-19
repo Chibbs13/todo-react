@@ -2,7 +2,7 @@ import { useCallback, useRef, useState, useEffect } from "react";
 import "./App.css";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import { Gem, Star } from "lucide-react";
+import { Gem, Mail, ShieldCheck, Sparkles, Star } from "lucide-react";
 
 import TaskList from "./components/TaskList";
 import TaskModal from "./components/TaskModal";
@@ -25,8 +25,17 @@ function normalizeCategory(category) {
   return category === "All Tasks" ? GENERAL_CATEGORY : category;
 }
 
+function getRankForXp(xp) {
+  return RANKS.findLast((rank) => xp >= rank.minXp) || RANKS[0];
+}
+
+function getTodayKey() {
+  return new Date().toLocaleDateString("en-CA");
+}
+
 function App() {
   const [hasEnteredApp, setHasEnteredApp] = useState(false);
+  const [appPage, setAppPage] = useState("planner");
   const [task, setTask] = useState(() => {
     const savedTasks = localStorage.getItem("tasks");
 
@@ -87,6 +96,7 @@ function App() {
   const [taskCategory, setTaskCategory] = useState(GENERAL_CATEGORY);
   const [taskDueDate, setTaskDueDate] = useState("");
   const [isCelebrating, setIsCelebrating] = useState(false);
+  const [isRankCelebrating, setIsRankCelebrating] = useState(false);
   const [showCleanupPrompt, setShowCleanupPrompt] = useState(false);
   const [categoryNotifications, setCategoryNotifications] = useState([]);
   const [totalXp, setTotalXp] = useState(() => {
@@ -95,7 +105,11 @@ function App() {
 
     return Number.isFinite(parsedXp) ? parsedXp : 0;
   });
+  const [lastXpAwardDate, setLastXpAwardDate] = useState(
+    () => localStorage.getItem("momentumLastXpAwardDate") || "",
+  );
   const celebrationTimeoutRef = useRef(null);
+  const rankCelebrationTimeoutRef = useRef(null);
   const cleanupPromptTimeoutRef = useRef(null);
 
   const [isAddingCategory, setIsAddingCategory] = useState(false);
@@ -118,6 +132,12 @@ function App() {
   useEffect(() => {
     localStorage.setItem("momentumXp", String(totalXp));
   }, [totalXp]);
+
+  useEffect(() => {
+    if (lastXpAwardDate) {
+      localStorage.setItem("momentumLastXpAwardDate", lastXpAwardDate);
+    }
+  }, [lastXpAwardDate]);
 
   const visibleTasks =
     selectedCategory === GENERAL_CATEGORY
@@ -145,8 +165,7 @@ function App() {
     selectedCategory === GENERAL_CATEGORY
       ? "Total Progress"
       : `${selectedCategory} Progress`;
-  const currentRank =
-    RANKS.findLast((rank) => totalXp >= rank.minXp) || RANKS[0];
+  const currentRank = getRankForXp(totalXp);
   const RankIcon = currentRank.Icon;
   const rankProgress = currentRank.nextXp
     ? Math.round(
@@ -159,6 +178,7 @@ function App() {
   useEffect(() => {
     return () => {
       window.clearTimeout(celebrationTimeoutRef.current);
+      window.clearTimeout(rankCelebrationTimeoutRef.current);
       window.clearTimeout(cleanupPromptTimeoutRef.current);
     };
   }, []);
@@ -176,6 +196,20 @@ function App() {
     cleanupPromptTimeoutRef.current = window.setTimeout(() => {
       setShowCleanupPrompt(true);
     }, 5200);
+  }
+
+  function startRankCelebration() {
+    window.clearTimeout(rankCelebrationTimeoutRef.current);
+    setIsRankCelebrating(true);
+
+    rankCelebrationTimeoutRef.current = window.setTimeout(() => {
+      setIsRankCelebrating(false);
+    }, 2200);
+  }
+
+  function openPlanner() {
+    setHasEnteredApp(true);
+    setAppPage("planner");
   }
 
   function showCategoryNotification(category) {
@@ -295,6 +329,8 @@ function App() {
       task.length > 0 && task.every((taskItem) => taskItem.completed);
     const nextTotalComplete =
       nextTasks.length > 0 && nextTasks.every((taskItem) => taskItem.completed);
+    const todayKey = getTodayKey();
+    const canEarnXpToday = lastXpAwardDate !== todayKey;
 
     setTask(nextTasks);
 
@@ -302,8 +338,19 @@ function App() {
       startCelebration();
     }
 
-    if (!wasTotalComplete && nextTotalComplete) {
-      setTotalXp((currentXp) => currentXp + 10);
+    if (!wasTotalComplete && nextTotalComplete && canEarnXpToday) {
+      setTotalXp((currentXp) => {
+        const nextXp = currentXp + 10;
+        const currentRankId = getRankForXp(currentXp).id;
+        const nextRankId = getRankForXp(nextXp).id;
+
+        if (currentRankId !== nextRankId) {
+          startRankCelebration();
+        }
+
+        return nextXp;
+      });
+      setLastXpAwardDate(todayKey);
     }
   }
 
@@ -427,7 +474,7 @@ function App() {
             <button
               className="landing-nav-button"
               type="button"
-              onClick={() => setHasEnteredApp(true)}
+              onClick={openPlanner}
             >
               Open Planner
             </button>
@@ -445,7 +492,7 @@ function App() {
               <button
                 className="landing-primary-button"
                 type="button"
-                onClick={() => setHasEnteredApp(true)}
+                onClick={openPlanner}
               >
                 Start Planning
               </button>
@@ -486,27 +533,163 @@ function App() {
 
         <div className="app-nav-actions">
           <button
-            className="app-nav-link"
+            className={`app-nav-link ${appPage === "planner" ? "active" : ""}`}
             type="button"
-            onClick={() => setHasEnteredApp(false)}
+            onClick={() => setAppPage("planner")}
+            aria-current={appPage === "planner" ? "page" : undefined}
           >
             Home
           </button>
-          <button className="app-nav-link" type="button">
+          <button
+            className={`app-nav-link ${appPage === "contact" ? "active" : ""}`}
+            type="button"
+            onClick={() => setAppPage("contact")}
+            aria-current={appPage === "contact" ? "page" : undefined}
+          >
             Contact
           </button>
-          <button className="app-nav-link" type="button">
+          <button
+            className={`app-nav-link ${appPage === "about" ? "active" : ""}`}
+            type="button"
+            onClick={() => setAppPage("about")}
+            aria-current={appPage === "about" ? "page" : undefined}
+          >
             About
           </button>
         </div>
       </nav>
 
+      {appPage === "about" && (
+        <section className="info-page" aria-labelledby="about-title">
+          <div className="info-page-heading">
+            <p className="todo-date">About Momentum</p>
+            <h1 id="about-title">
+              Small wins, real <span className="title-gradient">progress</span>
+            </h1>
+            <p>
+              Momentum is built around one simple idea: a focused daily list
+              should feel calm, clear, and rewarding enough to come back to.
+            </p>
+          </div>
+
+          <div className="info-feature-grid">
+            <article className="info-feature">
+              <Sparkles size={22} strokeWidth={2.3} />
+              <h2>Daily Focus</h2>
+              <p>
+                Keep attention on the tasks that matter today, with categories
+                and due dates close at hand.
+              </p>
+            </article>
+
+            <article className="info-feature">
+              <ShieldCheck size={22} strokeWidth={2.3} />
+              <h2>Progress That Sticks</h2>
+              <p>
+                XP, ranks, and completion moments make consistency visible
+                without turning the app into noise.
+              </p>
+            </article>
+
+            <article className="info-feature">
+              <Star size={22} strokeWidth={2.3} />
+              <h2>Built For Momentum</h2>
+              <p>
+                The app rewards finishing the day once, so the habit stays
+                healthy instead of becoming a grind.
+              </p>
+            </article>
+          </div>
+        </section>
+      )}
+
+      {appPage === "contact" && (
+        <section className="info-page contact-page" aria-labelledby="contact-title">
+          <div className="info-page-heading">
+            <p className="todo-date">Contact</p>
+            <h1 id="contact-title">
+              Tell us what should get <span className="title-gradient">better</span>
+            </h1>
+            <p>
+              Questions, ideas, and feedback all belong here. Momentum should
+              keep feeling lighter, sharper, and more useful over time.
+            </p>
+          </div>
+
+          <div className="contact-layout">
+            <div className="contact-card">
+              <Mail size={24} strokeWidth={2.3} />
+              <h2>Reach Out</h2>
+              <p>
+                Send feedback, report a rough edge, or share the next feature
+                you want to see.
+              </p>
+              <a href="mailto:hello@momentum.app">hello@momentum.app</a>
+            </div>
+
+            <form
+              className="contact-form"
+              action="mailto:hello@momentum.app"
+              method="post"
+              encType="text/plain"
+            >
+              <label>
+                Name
+                <input name="name" type="text" placeholder="Your name" />
+              </label>
+
+              <label>
+                Email
+                <input name="email" type="email" placeholder="you@example.com" />
+              </label>
+
+              <label>
+                Message
+                <textarea
+                  name="message"
+                  placeholder="What are you thinking?"
+                  rows={5}
+                />
+              </label>
+
+              <button type="submit">Send Message</button>
+            </form>
+          </div>
+        </section>
+      )}
+
+      {appPage === "planner" && (
       <div className="dashboard-layout">
         <div className="sidebar-stack">
           <div
-            className={`level-card rank-${currentRank.id}`}
+            className={`level-card rank-${currentRank.id} ${
+              isRankCelebrating ? "rank-celebrating" : ""
+            }`}
             aria-label="Momentum rank"
           >
+            {isRankCelebrating && (
+              <>
+                <div className="great-job-pop rank-up-pop" role="status">
+                  Rank Up!
+                </div>
+
+                <div className="confetti-burst rank-confetti" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                </div>
+              </>
+            )}
+
             <div>
               <p className="progress-label">Rank</p>
               <div className="rank-value">
@@ -528,7 +711,7 @@ function App() {
             </div>
 
             <p className="progress-copy">
-              {totalXp} XP earned · Complete all task to earn XP.
+              {totalXp} XP earned · Complete all tasks once daily to earn XP.
             </p>
           </div>
 
@@ -640,6 +823,7 @@ function App() {
           </DndContext>
         </div>
       </div>
+      )}
 
       <TaskModal
         isOpen={isAddingTask || !!selectedTask}
