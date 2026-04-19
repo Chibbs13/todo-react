@@ -439,6 +439,33 @@ function App() {
 
   return (
     <main className="app">
+      <nav className="app-nav" aria-label="Application navigation">
+        <button
+          className="app-brand"
+          type="button"
+          onClick={() => setHasEnteredApp(false)}
+        >
+          <Logo className="app-nav-logo" />
+          <span>Momentum</span>
+        </button>
+
+        <div className="app-nav-actions">
+          <button
+            className="app-nav-link"
+            type="button"
+            onClick={() => setHasEnteredApp(false)}
+          >
+            Home
+          </button>
+          <button className="app-nav-link" type="button">
+            Contact
+          </button>
+          <button className="app-nav-link" type="button">
+            About
+          </button>
+        </div>
+      </nav>
+
       <div className="dashboard-layout">
         <CategorySidebar
           categories={categories}
@@ -454,8 +481,6 @@ function App() {
         <div className="todo-container">
           <div className="todo-top-row">
             <div className="todo-header">
-              <Logo className="app-logo" />
-
               <div className="todo-heading">
                 <p className="todo-date">{todayLabel}</p>
                 <h1 className="todo-title">
