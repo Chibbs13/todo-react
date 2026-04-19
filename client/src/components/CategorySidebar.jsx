@@ -5,6 +5,7 @@ import { getCategoryIcon } from "../lib/categoryIcons";
 function CategorySidebar({
   categories,
   categoryIcons,
+  categoryNotifications,
   selectedCategory,
   onSelectCategory,
   onAddCategory,
@@ -19,6 +20,7 @@ function CategorySidebar({
         {categories.map((category) => {
           const CategoryIcon = getCategoryIcon(category, categoryIcons);
           const canManageCategory = category !== "General";
+          const hasNotification = categoryNotifications.includes(category);
 
           return (
             <div
@@ -33,8 +35,14 @@ function CategorySidebar({
                 type="button"
                 onClick={() => onSelectCategory(category)}
               >
-                <CategoryIcon size={16} strokeWidth={2.4} />
-                <span>{category}</span>
+                <span className="category-icon-shell">
+                  <CategoryIcon size={16} strokeWidth={2.4} />
+
+                  {hasNotification && (
+                    <span className="category-notification-dot" />
+                  )}
+                </span>
+                <span className="category-label">{category}</span>
               </button>
 
               {canManageCategory && (

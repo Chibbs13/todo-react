@@ -79,6 +79,7 @@ function App() {
   const [taskDueDate, setTaskDueDate] = useState("");
   const [isCelebrating, setIsCelebrating] = useState(false);
   const [showCleanupPrompt, setShowCleanupPrompt] = useState(false);
+  const [categoryNotifications, setCategoryNotifications] = useState([]);
   const celebrationTimeoutRef = useRef(null);
   const cleanupPromptTimeoutRef = useRef(null);
 
@@ -148,6 +149,21 @@ function App() {
     }, 5200);
   }
 
+  function showCategoryNotification(category) {
+    setCategoryNotifications((currentNotifications) =>
+      currentNotifications.includes(category)
+        ? currentNotifications
+        : [...currentNotifications, category],
+    );
+  }
+
+  function selectCategory(category) {
+    setSelectedCategory(category);
+    setCategoryNotifications((currentNotifications) =>
+      currentNotifications.filter((item) => item !== category),
+    );
+  }
+
   function openAddTaskModal() {
     setIsAddingTask(true);
     setSelectedTask(null);
@@ -189,6 +205,7 @@ function App() {
       };
 
       setTask([...task, newTaskObj]);
+      showCategoryNotification(taskCategory);
     } else if (selectedTask) {
       setTask(
         task.map((t) =>
@@ -366,8 +383,9 @@ function App() {
         <CategorySidebar
           categories={categories}
           categoryIcons={categoryIcons}
+          categoryNotifications={categoryNotifications}
           selectedCategory={selectedCategory}
-          onSelectCategory={setSelectedCategory}
+          onSelectCategory={selectCategory}
           onAddCategory={openAddCategoryModal}
           onEditCategory={openEditCategoryModal}
           onDeleteCategory={deleteCategory}
