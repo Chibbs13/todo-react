@@ -36,6 +36,24 @@ function getTodayKey() {
 function App() {
   const [hasEnteredApp, setHasEnteredApp] = useState(false);
   const [appPage, setAppPage] = useState("planner");
+  const [isAccountPromptOpen, setIsAccountPromptOpen] = useState(false);
+  const [accountMode, setAccountMode] = useState("signup");
+  const [accountName, setAccountName] = useState("");
+  const [accountEmail, setAccountEmail] = useState("");
+  const [accountPassword, setAccountPassword] = useState("");
+  const [accountError, setAccountError] = useState("");
+  const [isCreatingAccount, setIsCreatingAccount] = useState(false);
+  const [accountProfile, setAccountProfile] = useState(() => {
+    const savedAccount = localStorage.getItem("momentumAccount");
+
+    if (!savedAccount) return null;
+
+    try {
+      return JSON.parse(savedAccount);
+    } catch {
+      return null;
+    }
+  });
   const [task, setTask] = useState(() => {
     const savedTasks = localStorage.getItem("tasks");
 
@@ -163,7 +181,7 @@ function App() {
       : selectedCategory;
   const progressLabel =
     selectedCategory === GENERAL_CATEGORY
-      ? "Total Progress"
+      ? "Momentum Meter"
       : `${selectedCategory} Progress`;
   const currentRank = getRankForXp(totalXp);
   const RankIcon = currentRank.Icon;
@@ -210,6 +228,76 @@ function App() {
   function openPlanner() {
     setHasEnteredApp(true);
     setAppPage("planner");
+  }
+
+  function requestPlannerAccess() {
+    if (accountProfile) {
+      openPlanner();
+      return;
+    }
+
+    setIsAccountPromptOpen(true);
+    setAccountError("");
+  }
+
+  function openSignupPrompt() {
+    setAccountMode("signup");
+    requestPlannerAccess();
+  }
+
+  function openLoginPrompt() {
+    setAccountMode("login");
+    setIsAccountPromptOpen(true);
+    setAccountError("");
+  }
+
+  function closeAccountPrompt() {
+    setIsAccountPromptOpen(false);
+    setAccountName("");
+    setAccountEmail("");
+    setAccountPassword("");
+    setAccountError("");
+  }
+
+  async function submitAccountForm(event) {
+    event.preventDefault();
+
+    setAccountError("");
+    setIsCreatingAccount(true);
+
+    try {
+      const response = await fetch(
+        accountMode === "signup" ? "/api/signup" : "/api/login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: accountName,
+            email: accountEmail,
+            password: accountPassword,
+          }),
+        },
+      );
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          payload.message ||
+            (accountMode === "signup"
+              ? "Could not create your account."
+              : "Could not log you in."),
+        );
+      }
+
+      localStorage.setItem("momentumAccount", JSON.stringify(payload.user));
+      setAccountProfile(payload.user);
+      closeAccountPrompt();
+      openPlanner();
+    } catch (error) {
+      setAccountError(error.message);
+    } finally {
+      setIsCreatingAccount(false);
+    }
   }
 
   function showCategoryNotification(category) {
@@ -474,45 +562,162 @@ function App() {
             <button
               className="landing-nav-button"
               type="button"
-              onClick={openPlanner}
+              onClick={openLoginPrompt}
             >
-              Open Planner
+              Login
             </button>
           </nav>
 
           <div className="landing-copy">
-            <p className="landing-eyebrow">Small wins real progress.</p>
+            <p className="landing-eyebrow">Finish today. Build tomorrow.</p>
             <h1>Momentum</h1>
             <p>
-              A calm daily planner for tasks, categories, due dates, progress,
-              and the small victory of checking everything off.
+              Turn a scattered to-do list into one clean daily win. Pick your
+              focus, check everything off, earn XP, and rank up without turning
+              productivity into a grind.
             </p>
 
             <div className="landing-actions">
               <button
                 className="landing-primary-button"
                 type="button"
-                onClick={openPlanner}
+                onClick={openSignupPrompt}
               >
                 Start Planning
               </button>
-              <a href="#landing-preview">See what it does</a>
+              <button
+                className="landing-secondary-button"
+                type="button"
+                onClick={() => {
+                  setHasEnteredApp(true);
+                  setAppPage("about");
+                }}
+              >
+                See what it does
+              </button>
+            </div>
+
+            <div className="landing-hook-row" aria-label="Momentum highlights">
+              <span>10 XP per day</span>
+              <span>Ranks that reward consistency</span>
+              <span>A clean slate when the work is done</span>
             </div>
           </div>
         </section>
 
+        {isAccountPromptOpen && (
+          <div className="task-overlay" onClick={closeAccountPrompt}>
+            <div
+              className="task-modal account-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="account-modal-title"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <form className="task-modal-form" onSubmit={submitAccountForm}>
+                <div className="task-modal-header">
+                  <h2 className="modal-title" id="account-modal-title">
+                    {accountMode === "signup"
+                      ? "Create your Momentum account"
+                      : "Log in to Momentum"}
+                  </h2>
+                </div>
+
+                <p className="account-modal-copy">
+                  {accountMode === "signup"
+                    ? "Save your progress, protect your XP, and start building your daily streak."
+                    : "Welcome back. Log in to jump right into your daily focus."}
+                </p>
+
+                {accountError && (
+                  <p className="account-modal-error" role="alert">
+                    {accountError}
+                  </p>
+                )}
+
+                {accountMode === "signup" && (
+                  <label className="modal-field">
+                    <span className="modal-label">Name</span>
+                    <input
+                      className="modal-title-input"
+                      type="text"
+                      value={accountName}
+                      onChange={(event) => setAccountName(event.target.value)}
+                      placeholder="Your name"
+                      required
+                    />
+                  </label>
+                )}
+
+                <label className="modal-field">
+                  <span className="modal-label">Email</span>
+                  <input
+                    className="modal-title-input"
+                    type="email"
+                    value={accountEmail}
+                    onChange={(event) => setAccountEmail(event.target.value)}
+                    placeholder="you@example.com"
+                    required
+                  />
+                </label>
+
+                <label className="modal-field">
+                  <span className="modal-label">Password</span>
+                  <input
+                    className="modal-title-input"
+                    type="password"
+                    value={accountPassword}
+                    onChange={(event) => setAccountPassword(event.target.value)}
+                    placeholder={
+                      accountMode === "signup"
+                        ? "Create a password"
+                        : "Enter your password"
+                    }
+                    minLength={6}
+                    required
+                  />
+                </label>
+
+                <div className="modal-actions account-modal-actions">
+                  <button
+                    className="modal-primary-button"
+                    type="submit"
+                    disabled={isCreatingAccount}
+                  >
+                    {isCreatingAccount
+                      ? accountMode === "signup"
+                        ? "Creating..."
+                        : "Logging in..."
+                      : accountMode === "signup"
+                        ? "Create Account"
+                        : "Login"}
+                  </button>
+                  <button
+                    className="modal-secondary-button"
+                    type="button"
+                    onClick={closeAccountPrompt}
+                    disabled={isCreatingAccount}
+                  >
+                    Close
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         <section className="landing-preview-band" id="landing-preview">
           <div>
             <span>01</span>
-            Smart Organization
+            Choose Today's Focus
           </div>
           <div>
             <span>02</span>
-            Focused View
+            Clear The List
           </div>
           <div>
             <span>03</span>
-            Progress Tracking
+            Earn XP And Rank Up
           </div>
         </section>
       </main>
