@@ -26,6 +26,186 @@ textarea {
   padding: 44px 18px;
 }
 
+.landing-page {
+  min-height: 100vh;
+  color: #171717;
+}
+
+.landing-hero {
+  position: relative;
+  min-height: calc(100vh - 92px);
+  overflow: hidden;
+  padding: 28px clamp(18px, 5vw, 72px) 64px;
+  isolation: isolate;
+}
+
+.landing-hero::before {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  background:
+    linear-gradient(rgba(15, 23, 42, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.025) 1px, transparent 1px),
+    #f7f6f2;
+  background-size: 28px 28px;
+  content: "";
+}
+
+.landing-hero::after {
+  position: absolute;
+  inset: auto -10vw -30vh 24vw;
+  z-index: -2;
+  height: 65vh;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    rgba(37, 99, 235, 0.14),
+    rgba(20, 184, 166, 0.1) 38%,
+    transparent 70%
+  );
+  content: "";
+  filter: blur(10px);
+}
+
+.landing-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: clamp(72px, 14vh, 132px);
+}
+
+.landing-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #171717;
+  font-size: 1rem;
+  font-weight: 850;
+}
+
+.landing-logo {
+  width: 36px;
+  height: 36px;
+  transition: transform 0.4s ease;
+}
+
+.landing-logo:hover {
+  transform: rotate(15deg) scale(1.05);
+}
+
+.landing-nav-button,
+.landing-primary-button {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0f766e, #2563eb);
+  background-clip: padding-box;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 800;
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.16s ease;
+}
+
+.landing-nav-button {
+  padding: 9px 13px;
+  font-size: 0.86rem;
+}
+
+.landing-primary-button {
+  padding: 12px 16px;
+  font-size: 0.95rem;
+}
+
+.landing-nav-button:hover,
+.landing-primary-button:hover {
+  border-color: rgba(47, 214, 187, 0.9);
+  box-shadow:
+    0 0 0 3px rgba(47, 214, 187, 0.22),
+    0 0 22px rgba(37, 99, 235, 0.32);
+  transform: translateY(-1px);
+}
+
+.landing-copy {
+  width: min(100%, 980px);
+}
+
+.landing-eyebrow {
+  margin: 0 0 12px;
+  color: #78716c;
+  font-size: 0.78rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.landing-copy h1 {
+  margin: 0;
+  background: linear-gradient(135deg, #171717 0 42%, #0f766e 58%, #2563eb);
+  background-clip: text;
+  color: transparent;
+  font-size: clamp(4.3rem, 13vw, 11.5rem);
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  line-height: 0.82;
+}
+
+.landing-copy p:not(.landing-eyebrow) {
+  width: min(100%, 560px);
+  margin: 24px 0 0;
+  color: #57534e;
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.landing-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 30px;
+}
+
+.landing-actions a {
+  color: #57534e;
+  font-size: 0.92rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.landing-actions a:hover {
+  color: #0f766e;
+}
+
+.landing-preview-band {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  min-height: 92px;
+  border-top: 1px solid #e7e5df;
+  background: #e7e5df;
+}
+
+.landing-preview-band div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 22px clamp(18px, 4vw, 48px);
+  background: rgba(255, 255, 255, 0.78);
+  color: #57534e;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.landing-preview-band span {
+  color: #0f766e;
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+}
+
 .dashboard-layout {
   display: grid;
   grid-template-columns: 220px minmax(0, 760px);
@@ -1164,6 +1344,27 @@ textarea {
 }
 
 @media (max-width: 860px) {
+  .landing-hero {
+    min-height: auto;
+    padding: 22px 18px 54px;
+  }
+
+  .landing-nav {
+    margin-bottom: 72px;
+  }
+
+  .landing-copy h1 {
+    font-size: clamp(4.4rem, 24vw, 7rem);
+  }
+
+  .landing-preview-band {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-preview-band div {
+    min-height: 72px;
+  }
+
   .app {
     padding: 24px 14px;
   }
@@ -1253,5 +1454,3 @@ textarea {
     width: 100%;
   }
 }
-
-

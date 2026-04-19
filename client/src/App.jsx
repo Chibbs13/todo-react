@@ -19,6 +19,7 @@ function normalizeCategory(category) {
 }
 
 function App() {
+  const [hasEnteredApp, setHasEnteredApp] = useState(false);
   const [task, setTask] = useState(() => {
     const savedTasks = localStorage.getItem("tasks");
 
@@ -376,6 +377,64 @@ function App() {
     if (taskCategory === category) {
       setTaskCategory(GENERAL_CATEGORY);
     }
+  }
+
+  if (!hasEnteredApp) {
+    return (
+      <main className="landing-page">
+        <section className="landing-hero">
+          <nav className="landing-nav" aria-label="Landing navigation">
+            <div className="landing-brand">
+              <Logo className="landing-logo" />
+              <span>Momentum</span>
+            </div>
+
+            <button
+              className="landing-nav-button"
+              type="button"
+              onClick={() => setHasEnteredApp(true)}
+            >
+              Open Planner
+            </button>
+          </nav>
+
+          <div className="landing-copy">
+            <p className="landing-eyebrow">Small wins real progress.</p>
+            <h1>Momentum</h1>
+            <p>
+              A calm daily planner for tasks, categories, due dates, progress,
+              and the small victory of checking everything off.
+            </p>
+
+            <div className="landing-actions">
+              <button
+                className="landing-primary-button"
+                type="button"
+                onClick={() => setHasEnteredApp(true)}
+              >
+                Start Planning
+              </button>
+              <a href="#landing-preview">See what it does</a>
+            </div>
+          </div>
+        </section>
+
+        <section className="landing-preview-band" id="landing-preview">
+          <div>
+            <span>01</span>
+            Smart Organization
+          </div>
+          <div>
+            <span>02</span>
+            Focused View
+          </div>
+          <div>
+            <span>03</span>
+            Progress Tracking
+          </div>
+        </section>
+      </main>
+    );
   }
 
   return (
