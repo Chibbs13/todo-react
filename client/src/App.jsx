@@ -7,6 +7,7 @@ import TaskList from "./components/TaskList";
 import TaskModal from "./components/TaskModal";
 import CategorySidebar from "./components/CategorySidebar";
 import CategoryModal from "./components/CategoryModal";
+import Logo from "./components/Logo";
 import { getCategoryStyle } from "./lib/categoryColors";
 import { DEFAULT_CATEGORY_ICONS } from "./lib/categoryIcons";
 
@@ -394,6 +395,8 @@ function App() {
         <div className="todo-container">
           <div className="todo-top-row">
             <div className="todo-header">
+              <Logo className="app-logo" />
+
               <div className="todo-heading">
                 <p className="todo-date">{todayLabel}</p>
                 <h1 className="todo-title">

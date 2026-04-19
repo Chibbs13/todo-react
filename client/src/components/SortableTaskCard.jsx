@@ -68,6 +68,10 @@ function SortableTaskCard({
               onPointerDown={(e) => e.stopPropagation()}
               onClick={() => toggleTaskCompleted(t.id)}
             >
+              <span className="task-icon-tooltip">
+                {t.completed ? "Mark incomplete" : "Mark complete"}
+              </span>
+
               {t.completed ? (
                 <Check size={17} strokeWidth={2.45} />
               ) : (

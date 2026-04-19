@@ -242,12 +242,28 @@ textarea {
 }
 
 .todo-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
   min-width: 0;
 }
 
 .todo-heading {
   min-width: 0;
   text-align: left;
+}
+
+.app-logo {
+  width: 54px;
+  height: 54px;
+  flex: 0 0 auto;
+  margin-top: 4px;
+  filter: drop-shadow(0 8px 16px rgba(37, 99, 235, 0.12));
+  transition: transform 0.4s ease;
+}
+
+.app-logo:hover {
+  transform: rotate(15deg) scale(1.05);
 }
 
 .todo-date {
@@ -567,6 +583,7 @@ textarea {
 }
 
 .task-icon-button {
+  position: relative;
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
@@ -579,14 +596,59 @@ textarea {
   cursor: pointer;
 }
 
+.task-icon-button::after {
+  position: absolute;
+  inset: -4px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  content: "";
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
 .task-icon-button:hover,
 .task-icon-button[aria-pressed="true"] {
   background: var(--category-accent);
   color: #ffffff;
 }
 
+.task-icon-button:hover::after,
+.task-icon-button:focus-visible::after {
+  border-color: var(--category-accent);
+  box-shadow: 0 0 0 3px var(--category-shadow);
+}
+
 .task-icon-button:active {
   cursor: pointer;
+}
+
+.task-icon-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  z-index: 5;
+  width: max-content;
+  max-width: 140px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: #171717;
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 4px);
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
+}
+
+.task-icon-button:hover .task-icon-tooltip,
+.task-icon-button:focus-visible .task-icon-tooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
 .task-text-group {
@@ -1191,3 +1253,5 @@ textarea {
     width: 100%;
   }
 }
+
+
