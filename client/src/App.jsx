@@ -20,6 +20,7 @@ const RANKS = [
   { id: "gold", label: "Gold", minXp: 200, nextXp: 300, Icon: Star },
   { id: "diamond", label: "Diamond", minXp: 300, nextXp: null, Icon: Gem },
 ];
+const SESSION_DURATION_MS = 10 * 60 * 1000;
 
 function normalizeCategory(category) {
   return category === "All Tasks" ? GENERAL_CATEGORY : category;
@@ -33,9 +34,31 @@ function getTodayKey() {
   return new Date().toLocaleDateString("en-CA");
 }
 
+function getStoredSession() {
+  const savedSession = localStorage.getItem("momentumSession");
+
+  if (!savedSession) return null;
+
+  try {
+    const session = JSON.parse(savedSession);
+
+    if (!session.user || Date.now() >= session.expiresAt) {
+      localStorage.removeItem("momentumSession");
+      localStorage.removeItem("momentumAccount");
+      return null;
+    }
+
+    return session;
+  } catch {
+    localStorage.removeItem("momentumSession");
+    return null;
+  }
+}
+
 function App() {
   const [hasEnteredApp, setHasEnteredApp] = useState(false);
   const [appPage, setAppPage] = useState("planner");
+  const [accountSession, setAccountSession] = useState(getStoredSession);
   const [isAccountPromptOpen, setIsAccountPromptOpen] = useState(false);
   const [accountMode, setAccountMode] = useState("signup");
   const [accountName, setAccountName] = useState("");
@@ -43,17 +66,6 @@ function App() {
   const [accountPassword, setAccountPassword] = useState("");
   const [accountError, setAccountError] = useState("");
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
-  const [accountProfile, setAccountProfile] = useState(() => {
-    const savedAccount = localStorage.getItem("momentumAccount");
-
-    if (!savedAccount) return null;
-
-    try {
-      return JSON.parse(savedAccount);
-    } catch {
-      return null;
-    }
-  });
   const [task, setTask] = useState(() => {
     const savedTasks = localStorage.getItem("tasks");
 
@@ -157,6 +169,29 @@ function App() {
     }
   }, [lastXpAwardDate]);
 
+  useEffect(() => {
+    if (!accountSession) return undefined;
+
+    const timeUntilExpiry = accountSession.expiresAt - Date.now();
+
+    if (timeUntilExpiry <= 0) {
+      localStorage.removeItem("momentumSession");
+      localStorage.removeItem("momentumAccount");
+      setAccountSession(null);
+      return undefined;
+    }
+
+    const sessionTimer = window.setTimeout(() => {
+      localStorage.removeItem("momentumSession");
+      localStorage.removeItem("momentumAccount");
+      setAccountSession(null);
+      setHasEnteredApp(false);
+      setAppPage("planner");
+    }, timeUntilExpiry);
+
+    return () => window.clearTimeout(sessionTimer);
+  }, [accountSession]);
+
   const visibleTasks =
     selectedCategory === GENERAL_CATEGORY
       ? task
@@ -230,22 +265,21 @@ function App() {
     setAppPage("planner");
   }
 
-  function requestPlannerAccess() {
-    if (accountProfile) {
-      openPlanner();
-      return;
-    }
-
+  function openSignupPrompt() {
+    setAccountMode("signup");
     setIsAccountPromptOpen(true);
     setAccountError("");
   }
 
-  function openSignupPrompt() {
-    setAccountMode("signup");
-    requestPlannerAccess();
-  }
-
   function openLoginPrompt() {
+    const storedSession = getStoredSession();
+
+    if (storedSession) {
+      setAccountSession(storedSession);
+      openPlanner();
+      return;
+    }
+
     setAccountMode("login");
     setIsAccountPromptOpen(true);
     setAccountError("");
@@ -289,8 +323,14 @@ function App() {
         );
       }
 
+      const nextSession = {
+        user: payload.user,
+        expiresAt: Date.now() + SESSION_DURATION_MS,
+      };
+
       localStorage.setItem("momentumAccount", JSON.stringify(payload.user));
-      setAccountProfile(payload.user);
+      localStorage.setItem("momentumSession", JSON.stringify(nextSession));
+      setAccountSession(nextSession);
       closeAccountPrompt();
       openPlanner();
     } catch (error) {
@@ -564,7 +604,7 @@ function App() {
               type="button"
               onClick={openLoginPrompt}
             >
-              Login
+              {accountSession ? "My Account" : "Login"}
             </button>
           </nav>
 
