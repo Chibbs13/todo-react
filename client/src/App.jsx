@@ -21,6 +21,82 @@ const RANKS = [
   { id: "diamond", label: "Diamond", minXp: 300, nextXp: null, Icon: Gem },
 ];
 const SESSION_DURATION_MS = 10 * 60 * 1000;
+const RAW_API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(
+  /\/$/,
+  "",
+);
+const API_BASE_URL = /^https?:\/\//.test(RAW_API_BASE_URL)
+  ? RAW_API_BASE_URL
+  : "";
+const USE_LOCAL_DEMO_AUTH = !API_BASE_URL && !import.meta.env.DEV;
+
+function getApiEndpoint(path) {
+  if (API_BASE_URL) return `${API_BASE_URL}${path}`;
+  if (import.meta.env.DEV) return path;
+
+  return null;
+}
+
+function getLocalDemoAccounts() {
+  const savedAccounts = localStorage.getItem("momentumDemoAccounts");
+
+  if (!savedAccounts) return [];
+
+  try {
+    const accounts = JSON.parse(savedAccounts);
+    return Array.isArray(accounts) ? accounts : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalDemoAccounts(accounts) {
+  localStorage.setItem("momentumDemoAccounts", JSON.stringify(accounts));
+}
+
+function createLocalDemoUser({ name, email, password }) {
+  const normalizedEmail = email.trim().toLowerCase();
+  const accounts = getLocalDemoAccounts();
+  const existingAccount = accounts.find(
+    (account) => account.email === normalizedEmail,
+  );
+
+  if (existingAccount) {
+    throw new Error("An account with that email already exists.");
+  }
+
+  const user = {
+    id:
+      window.crypto?.randomUUID?.() ||
+      `demo-${Date.now()}-${Math.round(Math.random() * 100000)}`,
+    name: name.trim(),
+    email: normalizedEmail,
+    createdAt: new Date().toISOString(),
+  };
+
+  saveLocalDemoAccounts([...accounts, { ...user, password }]);
+
+  return user;
+}
+
+function loginLocalDemoUser({ email, password }) {
+  const normalizedEmail = email.trim().toLowerCase();
+  const accounts = getLocalDemoAccounts();
+  const account = accounts.find(
+    (item) => item.email === normalizedEmail && item.password === password,
+  );
+
+  if (!account) {
+    throw new Error("Account not found.");
+  }
+
+  return {
+    id: account.id,
+    name: account.name,
+    email: account.email,
+    createdAt: account.createdAt,
+  };
+}
 
 function normalizeCategory(category) {
   return category === "All Tasks" ? GENERAL_CATEGORY : category;
@@ -32,6 +108,10 @@ function getRankForXp(xp) {
 
 function getTodayKey() {
   return new Date().toLocaleDateString("en-CA");
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 function getStoredSession() {
@@ -285,6 +365,27 @@ function App() {
     setAccountError("");
   }
 
+  function startGuestSession() {
+    const guestUser = {
+      id:
+        window.crypto?.randomUUID?.() ||
+        `guest-${Date.now()}-${Math.round(Math.random() * 100000)}`,
+      name: "Guest",
+      email: "",
+      isGuest: true,
+      createdAt: new Date().toISOString(),
+    };
+    const nextSession = {
+      user: guestUser,
+      expiresAt: Date.now() + SESSION_DURATION_MS,
+    };
+
+    localStorage.setItem("momentumAccount", JSON.stringify(guestUser));
+    localStorage.setItem("momentumSession", JSON.stringify(nextSession));
+    setAccountSession(nextSession);
+    openPlanner();
+  }
+
   function closeAccountPrompt() {
     setIsAccountPromptOpen(false);
     setAccountName("");
@@ -297,12 +398,34 @@ function App() {
     event.preventDefault();
 
     setAccountError("");
+
+    if (!isValidEmail(accountEmail.trim())) {
+      setAccountError("Enter a valid email address.");
+      return;
+    }
+
     setIsCreatingAccount(true);
 
     try {
-      const response = await fetch(
+      const endpoint = getApiEndpoint(
         accountMode === "signup" ? "/api/signup" : "/api/login",
-        {
+      );
+      let user;
+
+      if (USE_LOCAL_DEMO_AUTH) {
+        user =
+          accountMode === "signup"
+            ? createLocalDemoUser({
+                name: accountName,
+                email: accountEmail,
+                password: accountPassword,
+              })
+            : loginLocalDemoUser({
+                email: accountEmail,
+                password: accountPassword,
+              });
+      } else {
+        const response = await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -310,25 +433,27 @@ function App() {
             email: accountEmail,
             password: accountPassword,
           }),
-        },
-      );
-      const payload = await response.json();
+        });
+        const payload = await response.json();
 
-      if (!response.ok) {
-        throw new Error(
-          payload.message ||
-            (accountMode === "signup"
-              ? "Could not create your account."
-              : "Could not log you in."),
-        );
+        if (!response.ok) {
+          throw new Error(
+            payload.message ||
+              (accountMode === "signup"
+                ? "Could not create your account."
+                : "Could not log you in."),
+          );
+        }
+
+        user = payload.user;
       }
 
       const nextSession = {
-        user: payload.user,
+        user,
         expiresAt: Date.now() + SESSION_DURATION_MS,
       };
 
-      localStorage.setItem("momentumAccount", JSON.stringify(payload.user));
+      localStorage.setItem("momentumAccount", JSON.stringify(user));
       localStorage.setItem("momentumSession", JSON.stringify(nextSession));
       setAccountSession(nextSession);
       closeAccountPrompt();
@@ -599,13 +724,22 @@ function App() {
               <span>Momentum</span>
             </div>
 
-            <button
-              className="landing-nav-button"
-              type="button"
-              onClick={openLoginPrompt}
-            >
-              {accountSession ? "My Account" : "Login"}
-            </button>
+            <div className="landing-nav-actions">
+              <button
+                className="landing-nav-button"
+                type="button"
+                onClick={openLoginPrompt}
+              >
+                {accountSession ? "My Account" : "Login"}
+              </button>
+              <button
+                className="landing-nav-button landing-nav-secondary"
+                type="button"
+                onClick={startGuestSession}
+              >
+                Try It Free
+              </button>
+            </div>
           </nav>
 
           <div className="landing-copy">
@@ -654,7 +788,11 @@ function App() {
               aria-labelledby="account-modal-title"
               onClick={(event) => event.stopPropagation()}
             >
-              <form className="task-modal-form" onSubmit={submitAccountForm}>
+              <form
+                className="task-modal-form"
+                onSubmit={submitAccountForm}
+                noValidate
+              >
                 <div className="task-modal-header">
                   <h2 className="modal-title" id="account-modal-title">
                     {accountMode === "signup"
@@ -693,7 +831,9 @@ function App() {
                   <span className="modal-label">Email</span>
                   <input
                     className="modal-title-input"
-                    type="email"
+                    type="text"
+                    inputMode="email"
+                    autoComplete="email"
                     value={accountEmail}
                     onChange={(event) => setAccountEmail(event.target.value)}
                     placeholder="you@example.com"

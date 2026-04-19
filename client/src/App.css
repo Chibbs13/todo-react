@@ -190,6 +190,12 @@ textarea {
   font-weight: 850;
 }
 
+.landing-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .landing-logo {
   width: 36px;
   height: 36px;
@@ -218,6 +224,16 @@ textarea {
 .landing-nav-button {
   padding: 9px 13px;
   font-size: 0.86rem;
+}
+
+.landing-nav-secondary {
+  border-color: #e7e5df;
+  background: rgba(255, 255, 255, 0.78);
+  color: #57534e;
+}
+
+.landing-nav-secondary:hover {
+  color: #171717;
 }
 
 .landing-primary-button {
@@ -1324,6 +1340,7 @@ textarea {
   justify-content: center;
   padding: 20px;
   background: rgba(23, 23, 23, 0.44);
+  overflow-y: auto;
 }
 
 .task-modal,
@@ -1331,6 +1348,7 @@ textarea {
   position: relative;
   overflow: hidden;
   width: 100%;
+  max-height: calc(100vh - 40px);
   border: 1px solid #e7e5df;
   border-radius: 14px;
   background:
@@ -1352,6 +1370,7 @@ textarea {
 .account-modal {
   max-width: 460px;
   padding: 24px;
+  overflow-y: auto;
 }
 
 .account-modal-copy {
@@ -1814,6 +1833,14 @@ textarea {
     font-size: clamp(4.4rem, 24vw, 7rem);
   }
 
+  .landing-copy p:not(.landing-eyebrow) {
+    width: min(100%, 620px);
+  }
+
+  .landing-hook-row {
+    max-width: 620px;
+  }
+
   .landing-preview-band {
     grid-template-columns: 1fr;
   }
@@ -1881,6 +1908,10 @@ textarea {
     opacity: 1;
   }
 
+  .level-card {
+    min-height: 0;
+  }
+
   .category-add-button {
     width: auto;
     margin-top: 10px;
@@ -1907,6 +1938,68 @@ textarea {
 }
 
 @media (max-width: 620px) {
+  .landing-hero {
+    padding: 18px 14px 42px;
+  }
+
+  .landing-nav {
+    gap: 12px;
+    margin-bottom: 58px;
+  }
+
+  .landing-nav-actions {
+    flex: 0 0 auto;
+    gap: 6px;
+  }
+
+  .landing-nav-button {
+    padding: 9px 10px;
+    font-size: 0.8rem;
+  }
+
+  .landing-brand {
+    min-width: 0;
+  }
+
+  .landing-copy h1 {
+    font-size: clamp(3.55rem, 21vw, 5.8rem);
+    line-height: 0.9;
+  }
+
+  .landing-copy p:not(.landing-eyebrow) {
+    margin-top: 18px;
+    font-size: 1rem;
+  }
+
+  .landing-actions {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+    width: min(100%, 320px);
+  }
+
+  .landing-primary-button,
+  .landing-secondary-button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .landing-secondary-button {
+    border: 1px solid #e7e5df;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.72);
+  }
+
+  .landing-hook-row {
+    flex-direction: column;
+    width: min(100%, 320px);
+  }
+
+  .landing-hook-row span {
+    justify-content: center;
+    text-align: center;
+  }
+
   .app-nav {
     align-items: stretch;
     flex-direction: column;
@@ -1939,6 +2032,22 @@ textarea {
 
   .task-actions {
     flex-direction: column;
+  }
+
+  .task-overlay {
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .task-modal,
+  .category-modal {
+    max-height: calc(100vh - 24px);
+  }
+
+  .task-modal-content,
+  .category-modal-content,
+  .account-modal {
+    padding: 18px;
   }
 
   .modal-actions {
