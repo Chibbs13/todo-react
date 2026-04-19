@@ -132,8 +132,11 @@ function TaskModal({
             </label>
 
             <div className="modal-actions">
-              <Button type="submit">{saveLabel}</Button>
+              <Button className="modal-primary-button" type="submit">
+                {saveLabel}
+              </Button>
               <Button
+                className="modal-secondary-button"
                 type="button"
                 variant="secondary"
                 onClick={closeTaskModal}

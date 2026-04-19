@@ -8,6 +8,7 @@ import TaskModal from "./components/TaskModal";
 import CategorySidebar from "./components/CategorySidebar";
 import CategoryModal from "./components/CategoryModal";
 import { getCategoryStyle } from "./lib/categoryColors";
+import { DEFAULT_CATEGORY_ICONS } from "./lib/categoryIcons";
 
 const DEFAULT_CATEGORIES = ["All Tasks", "Work", "Home", "Gym"];
 
@@ -40,6 +41,17 @@ function App() {
     }
   });
   const [selectedCategory, setSelectedCategory] = useState("All Tasks");
+  const [categoryIcons, setCategoryIcons] = useState(() => {
+    const savedCategoryIcons = localStorage.getItem("categoryIcons");
+
+    if (!savedCategoryIcons) return DEFAULT_CATEGORY_ICONS;
+
+    try {
+      return { ...DEFAULT_CATEGORY_ICONS, ...JSON.parse(savedCategoryIcons) };
+    } catch {
+      return DEFAULT_CATEGORY_ICONS;
+    }
+  });
 
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
@@ -51,6 +63,7 @@ function App() {
 
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategory, setNewCategory] = useState("");
+  const [newCategoryIcon, setNewCategoryIcon] = useState("tag");
 
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(task));
@@ -59,6 +72,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem("categories", JSON.stringify(categories));
   }, [categories]);
+
+  useEffect(() => {
+    localStorage.setItem("categoryIcons", JSON.stringify(categoryIcons));
+  }, [categoryIcons]);
 
   const visibleTasks =
     selectedCategory === "All Tasks"
@@ -193,11 +210,13 @@ function App() {
   function openAddCategoryModal() {
     setIsAddingCategory(true);
     setNewCategory("");
+    setNewCategoryIcon("tag");
   }
 
   const closeCategoryModal = useCallback(function closeCategoryModal() {
     setIsAddingCategory(false);
     setNewCategory("");
+    setNewCategoryIcon("tag");
   }, []);
 
   function saveCategory() {
@@ -208,6 +227,7 @@ function App() {
     if (categories.length >= 8) return;
 
     setCategories([...categories, trimmed]);
+    setCategoryIcons({ ...categoryIcons, [trimmed]: newCategoryIcon });
     setSelectedCategory(trimmed);
     closeCategoryModal();
   }
@@ -217,6 +237,7 @@ function App() {
       <div className="dashboard-layout">
         <CategorySidebar
           categories={categories}
+          categoryIcons={categoryIcons}
           selectedCategory={selectedCategory}
           onSelectCategory={setSelectedCategory}
           onAddCategory={openAddCategoryModal}
@@ -329,6 +350,8 @@ function App() {
         isOpen={isAddingCategory}
         newCategory={newCategory}
         setNewCategory={setNewCategory}
+        newCategoryIcon={newCategoryIcon}
+        setNewCategoryIcon={setNewCategoryIcon}
         closeCategoryModal={closeCategoryModal}
         saveCategory={saveCategory}
       />
