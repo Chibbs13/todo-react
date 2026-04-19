@@ -10,7 +10,12 @@ import CategoryModal from "./components/CategoryModal";
 import { getCategoryStyle } from "./lib/categoryColors";
 import { DEFAULT_CATEGORY_ICONS } from "./lib/categoryIcons";
 
-const DEFAULT_CATEGORIES = ["All Tasks", "Work", "Home", "Gym"];
+const GENERAL_CATEGORY = "General";
+const DEFAULT_CATEGORIES = [GENERAL_CATEGORY, "Work", "Home", "Gym"];
+
+function normalizeCategory(category) {
+  return category === "All Tasks" ? GENERAL_CATEGORY : category;
+}
 
 function App() {
   const [task, setTask] = useState(() => {
@@ -19,7 +24,10 @@ function App() {
     if (!savedTasks) return [];
 
     try {
-      return JSON.parse(savedTasks);
+      return JSON.parse(savedTasks).map((taskItem) => ({
+        ...taskItem,
+        category: normalizeCategory(taskItem.category),
+      }));
     } catch {
       return [];
     }
@@ -35,19 +43,29 @@ function App() {
 
       if (!Array.isArray(parsedCategories)) return DEFAULT_CATEGORIES;
 
-      return Array.from(new Set(["All Tasks", ...parsedCategories]));
+      return Array.from(
+        new Set([GENERAL_CATEGORY, ...parsedCategories.map(normalizeCategory)]),
+      );
     } catch {
       return DEFAULT_CATEGORIES;
     }
   });
-  const [selectedCategory, setSelectedCategory] = useState("All Tasks");
+  const [selectedCategory, setSelectedCategory] = useState(GENERAL_CATEGORY);
   const [categoryIcons, setCategoryIcons] = useState(() => {
     const savedCategoryIcons = localStorage.getItem("categoryIcons");
 
     if (!savedCategoryIcons) return DEFAULT_CATEGORY_ICONS;
 
     try {
-      return { ...DEFAULT_CATEGORY_ICONS, ...JSON.parse(savedCategoryIcons) };
+      const parsedCategoryIcons = JSON.parse(savedCategoryIcons);
+      const normalizedCategoryIcons = Object.fromEntries(
+        Object.entries(parsedCategoryIcons).map(([category, icon]) => [
+          normalizeCategory(category),
+          icon,
+        ]),
+      );
+
+      return { ...DEFAULT_CATEGORY_ICONS, ...normalizedCategoryIcons };
     } catch {
       return DEFAULT_CATEGORY_ICONS;
     }
@@ -57,9 +75,12 @@ function App() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDetails, setTaskDetails] = useState("");
-  const [taskCategory, setTaskCategory] = useState("All Tasks");
+  const [taskCategory, setTaskCategory] = useState(GENERAL_CATEGORY);
+  const [taskDueDate, setTaskDueDate] = useState("");
   const [isCelebrating, setIsCelebrating] = useState(false);
+  const [showCleanupPrompt, setShowCleanupPrompt] = useState(false);
   const celebrationTimeoutRef = useRef(null);
+  const cleanupPromptTimeoutRef = useRef(null);
 
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategory, setNewCategory] = useState("");
@@ -78,7 +99,7 @@ function App() {
   }, [categoryIcons]);
 
   const visibleTasks =
-    selectedCategory === "All Tasks"
+    selectedCategory === GENERAL_CATEGORY
       ? task
       : task.filter((taskItem) => taskItem.category === selectedCategory);
   const completedTaskCount = visibleTasks.filter(
@@ -88,25 +109,42 @@ function App() {
     visibleTasks.length === 0
       ? 0
       : Math.round((completedTaskCount / visibleTasks.length) * 100);
+  const visibleTasksComplete =
+    visibleTasks.length > 0 && completedTaskCount === visibleTasks.length;
   const todayLabel = new Intl.DateTimeFormat("en", {
     weekday: "long",
     month: "short",
     day: "numeric",
   }).format(new Date());
   const defaultTaskCategory =
-    selectedCategory === "All Tasks" ? categories[1] || "All Tasks" : selectedCategory;
+    selectedCategory === GENERAL_CATEGORY
+      ? categories[1] || GENERAL_CATEGORY
+      : selectedCategory;
+  const progressLabel =
+    selectedCategory === GENERAL_CATEGORY
+      ? "Total Progress"
+      : `${selectedCategory} Progress`;
 
   useEffect(() => {
-    return () => window.clearTimeout(celebrationTimeoutRef.current);
+    return () => {
+      window.clearTimeout(celebrationTimeoutRef.current);
+      window.clearTimeout(cleanupPromptTimeoutRef.current);
+    };
   }, []);
 
   function startCelebration() {
     window.clearTimeout(celebrationTimeoutRef.current);
+    window.clearTimeout(cleanupPromptTimeoutRef.current);
     setIsCelebrating(true);
+    setShowCleanupPrompt(false);
 
     celebrationTimeoutRef.current = window.setTimeout(() => {
       setIsCelebrating(false);
     }, 2200);
+
+    cleanupPromptTimeoutRef.current = window.setTimeout(() => {
+      setShowCleanupPrompt(true);
+    }, 5200);
   }
 
   function openAddTaskModal() {
@@ -115,6 +153,7 @@ function App() {
     setTaskTitle("");
     setTaskDetails("");
     setTaskCategory(defaultTaskCategory);
+    setTaskDueDate("");
   }
 
   function openTaskEditor(taskItem) {
@@ -122,7 +161,8 @@ function App() {
     setSelectedTask(taskItem);
     setTaskTitle(taskItem.title || taskItem.text || "");
     setTaskDetails(taskItem.details || "");
-    setTaskCategory(taskItem.category || "All Tasks");
+    setTaskCategory(normalizeCategory(taskItem.category) || GENERAL_CATEGORY);
+    setTaskDueDate(taskItem.dueDate || "");
   }
 
   const closeTaskModal = useCallback(function closeTaskModal() {
@@ -130,7 +170,8 @@ function App() {
     setSelectedTask(null);
     setTaskTitle("");
     setTaskDetails("");
-    setTaskCategory("All Tasks");
+    setTaskCategory(GENERAL_CATEGORY);
+    setTaskDueDate("");
   }, []);
 
   function saveTask() {
@@ -142,6 +183,7 @@ function App() {
         title: taskTitle,
         details: taskDetails,
         category: taskCategory,
+        dueDate: taskDueDate,
         completed: false,
       };
 
@@ -155,6 +197,7 @@ function App() {
                 title: taskTitle,
                 details: taskDetails,
                 category: taskCategory,
+                dueDate: taskDueDate,
               }
             : t,
         ),
@@ -166,10 +209,23 @@ function App() {
 
   function deleteTask(id) {
     setTask(task.filter((t) => t.id !== id));
+    setShowCleanupPrompt(false);
 
     if (selectedTask && selectedTask.id === id) {
       closeTaskModal();
     }
+  }
+
+  function deleteCompletedVisibleTasks() {
+    const visibleTaskIds = new Set(visibleTasks.map((taskItem) => taskItem.id));
+
+    setTask(
+      task.filter(
+        (taskItem) =>
+          !visibleTaskIds.has(taskItem.id) || !taskItem.completed,
+      ),
+    );
+    setShowCleanupPrompt(false);
   }
 
   function toggleTaskCompleted(id) {
@@ -179,7 +235,7 @@ function App() {
         : taskItem,
     );
     const nextVisibleTasks =
-      selectedCategory === "All Tasks"
+      selectedCategory === GENERAL_CATEGORY
         ? nextTasks
         : nextTasks.filter((taskItem) => taskItem.category === selectedCategory);
     const wasComplete =
@@ -287,7 +343,7 @@ function App() {
               )}
 
               <div>
-                <p className="progress-label">Progress</p>
+                <p className="progress-label">{progressLabel}</p>
                 <p className="progress-value">{progressPercent}%</p>
               </div>
 
@@ -308,6 +364,15 @@ function App() {
                     ? "Let's check off some boxes"
                   : `${completedTaskCount} of ${visibleTasks.length} complete`}
               </p>
+
+              {visibleTasksComplete && showCleanupPrompt && (
+                <div className="cleanup-prompt">
+                  <span>Nice work. Clear completed tasks?</span>
+                  <button type="button" onClick={deleteCompletedVisibleTasks}>
+                    Clear completed
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -322,6 +387,7 @@ function App() {
             <TaskList
               tasks={visibleTasks}
               selectedCategory={selectedCategory}
+              categoryIcons={categoryIcons}
               deleteTask={deleteTask}
               openTaskEditor={openTaskEditor}
               toggleTaskCompleted={toggleTaskCompleted}
@@ -339,7 +405,10 @@ function App() {
         setTaskDetails={setTaskDetails}
         taskCategory={taskCategory}
         setTaskCategory={setTaskCategory}
+        taskDueDate={taskDueDate}
+        setTaskDueDate={setTaskDueDate}
         categories={categories}
+        categoryIcons={categoryIcons}
         getCategoryStyle={getCategoryStyle}
         closeTaskModal={closeTaskModal}
         saveTask={saveTask}

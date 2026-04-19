@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 export const DEFAULT_CATEGORY_ICONS = {
-  "All Tasks": "inbox",
+  General: "inbox",
   Work: "briefcase",
   Home: "home",
   Gym: "dumbbell",

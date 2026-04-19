@@ -7,12 +7,13 @@ import SortableTaskCard from "./SortableTaskCard";
 function TaskList({
   tasks,
   selectedCategory,
+  categoryIcons,
   deleteTask,
   openTaskEditor,
   toggleTaskCompleted,
 }) {
   const emptyMessage =
-    selectedCategory === "All Tasks"
+    selectedCategory === "General"
       ? "Let's check off some boxes. Add your first task to get rolling."
       : `No ${selectedCategory} tasks yet. This list is ready when you are.`;
 
@@ -29,6 +30,7 @@ function TaskList({
             <SortableTaskCard
               key={t.id}
               t={t}
+              categoryIcons={categoryIcons}
               deleteTask={deleteTask}
               openTaskEditor={openTaskEditor}
               toggleTaskCompleted={toggleTaskCompleted}

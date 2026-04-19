@@ -71,8 +71,7 @@ textarea {
 .category-add-button,
 .category-chip,
 .todo-add-button,
-.task-complete-button,
-.task-drag-button {
+.task-icon-button {
   border: 0;
   cursor: pointer;
   transition:
@@ -377,6 +376,43 @@ textarea {
   font-weight: 650;
 }
 
+.cleanup-prompt {
+  display: grid;
+  gap: 7px;
+  padding-top: 2px;
+  animation: cleanupPromptIn 0.24s ease;
+}
+
+.cleanup-prompt span {
+  color: #57534e;
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.cleanup-prompt button {
+  width: fit-content;
+  border: 1px solid #d6d3ca;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #57534e;
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 800;
+  padding: 5px 9px;
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease,
+    transform 0.16s ease;
+}
+
+.cleanup-prompt button:hover {
+  border-color: #0f766e;
+  background: #eef7f1;
+  color: #0f766e;
+  transform: translateY(-1px);
+}
+
 .task-list {
   display: flex;
   flex-direction: column;
@@ -402,6 +438,7 @@ textarea {
   border-radius: 12px;
   background: #ffffff;
   box-shadow: 0 8px 20px rgba(23, 23, 23, 0.04);
+  cursor: grab;
   overflow: visible;
   transition:
     border-color 0.16s ease,
@@ -426,7 +463,11 @@ textarea {
 
 .task-card.completed {
   background: #fbfaf8;
-  opacity: 0.78;
+  opacity: 0.86;
+}
+
+.task-card:active {
+  cursor: grabbing;
 }
 
 .task-card-content {
@@ -445,42 +486,27 @@ textarea {
   gap: 10px;
 }
 
-.task-drag-button,
-.task-complete-button {
+.task-icon-button {
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   width: 30px;
   height: 30px;
-}
-
-.task-drag-button {
   border-radius: 8px;
-  background: transparent;
-  color: #a8a29e;
-  cursor: grab;
+  background: var(--category-soft);
+  color: var(--category-text);
+  cursor: pointer;
 }
 
-.task-drag-button:hover {
-  background: #f5f4ef;
-  color: #57534e;
-}
-
-.task-drag-button:active {
-  cursor: grabbing;
-}
-
-.task-complete-button {
-  border: 2px solid var(--category-accent);
-  border-radius: 999px;
-  background: #ffffff;
+.task-icon-button:hover,
+.task-icon-button[aria-pressed="true"] {
+  background: var(--category-accent);
   color: #ffffff;
 }
 
-.task-complete-button:hover,
-.task-complete-button[aria-pressed="true"] {
-  background: var(--category-accent);
+.task-icon-button:active {
+  cursor: pointer;
 }
 
 .task-text-group {
@@ -502,6 +528,13 @@ textarea {
   text-decoration: line-through;
 }
 
+.task-date-line {
+  color: #78716c;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
 .task-details {
   display: -webkit-box;
   overflow: hidden;
@@ -512,17 +545,30 @@ textarea {
   -webkit-line-clamp: 2;
 }
 
+.task-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 2px;
+}
+
 .task-category-badge {
   display: inline-flex;
+  align-items: center;
+  gap: 4px;
   align-self: flex-start;
   width: fit-content;
-  margin-top: 2px;
   padding: 3px 8px;
   border-radius: 999px;
   background: var(--category-soft);
   color: var(--category-text);
   font-size: 0.68rem;
   font-weight: 800;
+}
+
+.task-category-badge svg {
+  flex: 0 0 auto;
 }
 
 .task-actions {
@@ -622,6 +668,7 @@ textarea {
 }
 
 .modal-title-input,
+.modal-date-input,
 .modal-input {
   width: 100%;
   border: 1px solid #d6d3ca;
@@ -642,6 +689,11 @@ textarea {
   padding: 11px 12px;
 }
 
+.modal-date-input {
+  padding: 11px 12px;
+  color-scheme: light;
+}
+
 .modal-input {
   min-height: 124px;
   padding: 11px 12px;
@@ -649,6 +701,7 @@ textarea {
 }
 
 .modal-title-input:focus,
+.modal-date-input:focus,
 .modal-input:focus {
   border-color: transparent;
   background:
@@ -670,12 +723,19 @@ textarea {
 }
 
 .category-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   padding: 6px 10px;
   border-radius: 999px;
   background: #f5f4ef;
   color: #57534e;
   font-size: 0.78rem;
   font-weight: 750;
+}
+
+.category-chip svg {
+  flex: 0 0 auto;
 }
 
 .category-chip:hover {
@@ -795,6 +855,18 @@ textarea {
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes cleanupPromptIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

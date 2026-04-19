@@ -1,6 +1,7 @@
-import { useEffect, useRef } from "react";
+import { createElement, useEffect, useRef } from "react";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
+import { getCategoryIcon } from "../lib/categoryIcons";
 
 function TaskModal({
   isOpen,
@@ -11,7 +12,10 @@ function TaskModal({
   setTaskDetails,
   taskCategory,
   setTaskCategory,
+  taskDueDate,
+  setTaskDueDate,
   categories,
+  categoryIcons,
   getCategoryStyle,
   closeTaskModal,
   saveTask,
@@ -103,22 +107,40 @@ function TaskModal({
               <legend className="modal-label">Category</legend>
 
               <div className="category-chip-list">
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    className={`category-chip ${
-                      taskCategory === cat ? "active" : ""
-                    }`}
-                    style={getCategoryStyle(cat)}
-                    onClick={() => setTaskCategory(cat)}
-                    aria-pressed={taskCategory === cat}
-                  >
-                    {cat}
-                  </button>
-                ))}
+                {categories.map((cat) => {
+                  const CategoryIcon = getCategoryIcon(cat, categoryIcons);
+
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      className={`category-chip ${
+                        taskCategory === cat ? "active" : ""
+                      }`}
+                      style={getCategoryStyle(cat)}
+                      onClick={() => setTaskCategory(cat)}
+                      aria-pressed={taskCategory === cat}
+                    >
+                      {createElement(CategoryIcon, {
+                        size: 13,
+                        strokeWidth: 2.45,
+                      })}
+                      {cat}
+                    </button>
+                  );
+                })}
               </div>
             </fieldset>
+
+            <label className="modal-field">
+              <span className="modal-label">Due date</span>
+              <input
+                className="modal-date-input"
+                type="date"
+                value={taskDueDate}
+                onChange={(e) => setTaskDueDate(e.target.value)}
+              />
+            </label>
 
             <label className="modal-field">
               <span className="modal-label">Details</span>

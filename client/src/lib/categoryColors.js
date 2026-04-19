@@ -1,5 +1,5 @@
 const CATEGORY_COLORS = {
-  "All Tasks": {
+  General: {
     accent: "#111827",
     soft: "#eeeeea",
     text: "#111827",
@@ -57,7 +57,7 @@ function getFallbackIndex(category) {
     FALLBACK_COLORS.length;
 }
 
-export function getCategoryColors(category = "All Tasks") {
+export function getCategoryColors(category = "General") {
   return CATEGORY_COLORS[category] || FALLBACK_COLORS[getFallbackIndex(category)];
 }
 
