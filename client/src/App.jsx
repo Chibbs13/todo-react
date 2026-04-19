@@ -2,6 +2,7 @@ import { useCallback, useRef, useState, useEffect } from "react";
 import "./App.css";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
+import { Gem, Star } from "lucide-react";
 
 import TaskList from "./components/TaskList";
 import TaskModal from "./components/TaskModal";
@@ -13,6 +14,12 @@ import { DEFAULT_CATEGORY_ICONS } from "./lib/categoryIcons";
 
 const GENERAL_CATEGORY = "General";
 const DEFAULT_CATEGORIES = [GENERAL_CATEGORY, "Work", "Home", "Gym"];
+const RANKS = [
+  { id: "bronze", label: "Bronze", minXp: 0, nextXp: 100, Icon: Star },
+  { id: "silver", label: "Silver", minXp: 100, nextXp: 200, Icon: Star },
+  { id: "gold", label: "Gold", minXp: 200, nextXp: 300, Icon: Star },
+  { id: "diamond", label: "Diamond", minXp: 300, nextXp: null, Icon: Gem },
+];
 
 function normalizeCategory(category) {
   return category === "All Tasks" ? GENERAL_CATEGORY : category;
@@ -82,6 +89,12 @@ function App() {
   const [isCelebrating, setIsCelebrating] = useState(false);
   const [showCleanupPrompt, setShowCleanupPrompt] = useState(false);
   const [categoryNotifications, setCategoryNotifications] = useState([]);
+  const [totalXp, setTotalXp] = useState(() => {
+    const savedXp = localStorage.getItem("momentumXp");
+    const parsedXp = Number(savedXp);
+
+    return Number.isFinite(parsedXp) ? parsedXp : 0;
+  });
   const celebrationTimeoutRef = useRef(null);
   const cleanupPromptTimeoutRef = useRef(null);
 
@@ -101,6 +114,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem("categoryIcons", JSON.stringify(categoryIcons));
   }, [categoryIcons]);
+
+  useEffect(() => {
+    localStorage.setItem("momentumXp", String(totalXp));
+  }, [totalXp]);
 
   const visibleTasks =
     selectedCategory === GENERAL_CATEGORY
@@ -128,6 +145,16 @@ function App() {
     selectedCategory === GENERAL_CATEGORY
       ? "Total Progress"
       : `${selectedCategory} Progress`;
+  const currentRank =
+    RANKS.findLast((rank) => totalXp >= rank.minXp) || RANKS[0];
+  const RankIcon = currentRank.Icon;
+  const rankProgress = currentRank.nextXp
+    ? Math.round(
+        ((totalXp - currentRank.minXp) /
+          (currentRank.nextXp - currentRank.minXp)) *
+          100,
+      )
+    : 100;
 
   useEffect(() => {
     return () => {
@@ -264,11 +291,19 @@ function App() {
     const nextIsComplete =
       nextVisibleTasks.length > 0 &&
       nextVisibleTasks.every((taskItem) => taskItem.completed);
+    const wasTotalComplete =
+      task.length > 0 && task.every((taskItem) => taskItem.completed);
+    const nextTotalComplete =
+      nextTasks.length > 0 && nextTasks.every((taskItem) => taskItem.completed);
 
     setTask(nextTasks);
 
     if (!wasComplete && nextIsComplete) {
       startCelebration();
+    }
+
+    if (!wasTotalComplete && nextTotalComplete) {
+      setTotalXp((currentXp) => currentXp + 10);
     }
   }
 
@@ -467,16 +502,47 @@ function App() {
       </nav>
 
       <div className="dashboard-layout">
-        <CategorySidebar
-          categories={categories}
-          categoryIcons={categoryIcons}
-          categoryNotifications={categoryNotifications}
-          selectedCategory={selectedCategory}
-          onSelectCategory={selectCategory}
-          onAddCategory={openAddCategoryModal}
-          onEditCategory={openEditCategoryModal}
-          onDeleteCategory={deleteCategory}
-        />
+        <div className="sidebar-stack">
+          <div
+            className={`level-card rank-${currentRank.id}`}
+            aria-label="Momentum rank"
+          >
+            <div>
+              <p className="progress-label">Rank</p>
+              <div className="rank-value">
+                <span className="rank-icon" aria-hidden="true">
+                  <RankIcon size={28} strokeWidth={2.4} />
+                </span>
+                <span>{currentRank.label}</span>
+              </div>
+            </div>
+
+            <div
+              className="level-track"
+              role="progressbar"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow={rankProgress}
+            >
+              <span style={{ width: `${rankProgress}%` }} />
+            </div>
+
+            <p className="progress-copy">
+              {totalXp} XP earned · Complete all task to earn XP.
+            </p>
+          </div>
+
+          <CategorySidebar
+            categories={categories}
+            categoryIcons={categoryIcons}
+            categoryNotifications={categoryNotifications}
+            selectedCategory={selectedCategory}
+            onSelectCategory={selectCategory}
+            onAddCategory={openAddCategoryModal}
+            onEditCategory={openEditCategoryModal}
+            onDeleteCategory={deleteCategory}
+          />
+        </div>
 
         <div className="todo-container">
           <div className="todo-top-row">
@@ -541,7 +607,7 @@ function App() {
                   ? "No tasks yet"
                   : completedTaskCount === 0
                     ? "Let's check off some boxes"
-                  : `${completedTaskCount} of ${visibleTasks.length} complete`}
+                    : `${completedTaskCount} of ${visibleTasks.length} complete`}
               </p>
 
               {visibleTasksComplete && showCleanupPrompt && (
