@@ -564,6 +564,10 @@ textarea {
   gap: 5px;
 }
 
+.category-scroll-row {
+  display: contents;
+}
+
 .category-row,
 .category-add-button,
 .category-chip,
@@ -1887,12 +1891,28 @@ textarea {
     margin-bottom: 10px;
   }
 
+  .category-scroll-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .category-scroll-row::-webkit-scrollbar {
+    display: none;
+  }
+
   .category-list {
     flex: 0 1 auto;
     flex-direction: row;
     gap: 6px;
-    overflow-x: auto;
-    padding-bottom: 2px;
+    min-width: max-content;
+    overflow: visible;
+    padding-bottom: 0;
   }
 
   .category-row {
@@ -1913,9 +1933,13 @@ textarea {
   }
 
   .category-add-button {
+    flex: 0 0 auto;
     width: auto;
-    margin-top: 10px;
-    align-self: flex-start;
+    min-height: 38px;
+    margin-top: 0;
+    align-self: auto;
+    padding: 8px 14px;
+    white-space: nowrap;
   }
 
   .todo-container {
@@ -2152,8 +2176,8 @@ textarea {
   }
 
   .category-list {
-    margin-right: -12px;
-    padding-right: 12px;
+    margin-right: 0;
+    padding-right: 0;
   }
 
   .category-row-actions {
@@ -2167,7 +2191,7 @@ textarea {
   }
 
   .category-add-button {
-    width: 100%;
+    width: auto;
   }
 
   .todo-container {
