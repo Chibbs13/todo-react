@@ -1939,7 +1939,7 @@ textarea {
 
 @media (max-width: 620px) {
   .landing-hero {
-    padding: 18px 14px 42px;
+    padding: 18px 14px 36px;
   }
 
   .landing-nav {
@@ -1962,8 +1962,9 @@ textarea {
   }
 
   .landing-copy h1 {
-    font-size: clamp(3.55rem, 21vw, 5.8rem);
-    line-height: 0.9;
+    font-size: clamp(3.05rem, 16.5vw, 4.4rem);
+    letter-spacing: 0;
+    line-height: 0.98;
   }
 
   .landing-copy p:not(.landing-eyebrow) {
@@ -2000,6 +2001,11 @@ textarea {
     text-align: center;
   }
 
+  .landing-preview-band div {
+    min-height: 58px;
+    padding: 18px;
+  }
+
   .app-nav {
     align-items: stretch;
     flex-direction: column;
@@ -2022,7 +2028,7 @@ textarea {
   }
 
   .todo-title {
-    font-size: 1.7rem;
+    font-size: 2.1rem;
   }
 
   .task-card-content {
@@ -2064,5 +2070,124 @@ textarea {
 
   .contact-form button {
     width: 100%;
+  }
+}
+
+@media (max-width: 430px) {
+  .landing-nav {
+    margin-bottom: 48px;
+  }
+
+  .landing-logo {
+    width: 30px;
+    height: 30px;
+  }
+
+  .landing-brand {
+    gap: 8px;
+    font-size: 0.92rem;
+  }
+
+  .landing-nav-actions {
+    gap: 5px;
+  }
+
+  .landing-nav-button {
+    min-height: 38px;
+    padding: 8px 9px;
+    font-size: 0.75rem;
+  }
+
+  .landing-eyebrow {
+    font-size: 0.7rem;
+    letter-spacing: 0.09em;
+  }
+
+  .landing-copy h1 {
+    font-size: clamp(3rem, 15.5vw, 3.8rem);
+  }
+
+  .landing-copy p:not(.landing-eyebrow) {
+    max-width: 33ch;
+    font-size: 0.98rem;
+    line-height: 1.45;
+  }
+
+  .landing-actions,
+  .landing-hook-row {
+    width: 100%;
+  }
+
+  .landing-hook-row span {
+    min-height: 32px;
+    font-size: 0.78rem;
+  }
+
+  .app {
+    padding: 14px 8px 28px;
+  }
+
+  .app-nav,
+  .category-sidebar,
+  .todo-container,
+  .level-card {
+    border-radius: 10px;
+  }
+
+  .app-brand {
+    justify-content: flex-start;
+  }
+
+  .app-nav-actions {
+    gap: 4px;
+  }
+
+  .app-nav-link {
+    padding: 8px 6px;
+    font-size: 0.78rem;
+  }
+
+  .category-sidebar {
+    padding: 12px;
+  }
+
+  .category-list {
+    margin-right: -12px;
+    padding-right: 12px;
+  }
+
+  .category-row-actions {
+    display: none;
+  }
+
+  .category-item {
+    min-height: 38px;
+    padding: 8px 11px;
+    font-size: 0.86rem;
+  }
+
+  .category-add-button {
+    width: 100%;
+  }
+
+  .todo-container {
+    padding: 18px 14px;
+  }
+
+  .todo-title {
+    font-size: 1.9rem;
+  }
+
+  .todo-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .progress-card,
+  .level-card {
+    padding: 14px;
+  }
+
+  .progress-value {
+    font-size: 1.8rem;
   }
 }
