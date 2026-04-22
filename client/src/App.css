@@ -1944,11 +1944,10 @@ textarea {
   }
 
   .category-add-button {
-    flex: 0 0 auto;
-    width: auto;
+    width: 100%;
     min-height: 38px;
-    margin-top: 0;
-    align-self: auto;
+    margin-top: 10px;
+    align-self: stretch;
     padding: 8px 14px;
     white-space: nowrap;
   }
@@ -2212,7 +2211,7 @@ textarea {
   }
 
   .category-add-button {
-    width: auto;
+    width: 100%;
   }
 
   .todo-container {

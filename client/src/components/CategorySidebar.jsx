@@ -67,15 +67,15 @@ function CategorySidebar({
             </div>
           );
         })}
-
-        <button
-          className="category-add-button"
-          onClick={onAddCategory}
-          type="button"
-        >
-          + Add New
-        </button>
       </div>
+
+      <button
+        className="category-add-button"
+        onClick={onAddCategory}
+        type="button"
+      >
+        + Add New
+      </button>
     </aside>
   );
 }
